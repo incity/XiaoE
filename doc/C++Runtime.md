@@ -1,4 +1,4 @@
-#基础知识：#
+# 基础知识： #
 v3s提供一个非常小的C++ runtime 支持库(/system/lib/libstdc++)和头文件。
 但此System C++库支持非常有限，不支持以下：
 
