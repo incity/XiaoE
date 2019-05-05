@@ -1,0 +1,12 @@
+prefix=/home/suyc/V3S/camdroid/device/softwinner/tiger-cdr/app/XiaoE/3rd-party
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: mGEff
+Description: An animation and user interface effects framework for MiniGUI-based embedded systems and smart IoT devices.
+Version: 1.2.0
+Requires: minigui
+Libs: -L${libdir} -lmgeff  -L/home/suyc/V3S/camdroid/device/softwinner/tiger-cdr/app/XiaoE/3rd-party/minigui/lib -lminigui_ths -ljpeg -lpng12 -lm -lts -lfreetype -L/home/suyc/V3S/camdroid/device/softwinner/tiger-cdr/app/XiaoE/3rd-party/minigui/lib -lmgplus -lstdc++
+Libs.private:
+Cflags: -I${includedir} 

@@ -20,6 +20,7 @@
 #include "debug.h"
 #include "common.h"
 
+#undef LOG_TAG
 #define LOG_TAG "ContentResolver"
 
 ContentResolver* ContentResolver::s_resolver = NULL;

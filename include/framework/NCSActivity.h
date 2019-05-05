@@ -12,6 +12,9 @@
 #include "Activity.h"
 #include "ActivityStack.h"
 
+#define ARRAY_LEN(array)(sizeof(array)/sizeof(array[0]))
+#define NCS_EVENT_HANDLER_CAST(func) reinterpret_cast<void*>(func)
+
 /** 
  * @synopsis NCSActivity 
  */
@@ -50,7 +53,7 @@ protected:
     HPACKAGE m_hPack;
     HICON m_hIcon;
     HMENU m_hMenu;
-    void (*m_onDestroyOrigin)(mWidget*, int);
+    void(*m_onDestroyOrigin)(mWidget*, int);
 };
 
 #endif   /* ----- #ifndef NCSACTIVITY_INC  ----- */

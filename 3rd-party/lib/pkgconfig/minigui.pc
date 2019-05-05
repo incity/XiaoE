@@ -1,0 +1,13 @@
+prefix=/home/suyc/V3S/camdroid/device/softwinner/tiger-cdr/app/XiaoE/3rd-party
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: MiniGUI
+Description: A mature cross-platform windowing and GUI system for embedded systems and IoT smart devices.
+Version: 4.0.0
+Runmode: ths
+Requires:
+Libs: -L${libdir} -lminigui_ths  -ljpeg -lpng12 -lm -lts -lfreetype
+Libs.private:
+Cflags: -I${includedir}

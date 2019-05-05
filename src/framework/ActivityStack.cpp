@@ -33,7 +33,7 @@ Activity* ActivityStack::top() const
     }
 }
 
-const char* ActivityStack::currentAppName() const
+const char* ActivityStack::currentActivityName() const
 {
     if (m_activities.empty()) {
         return NULL;
@@ -45,16 +45,16 @@ const char* ActivityStack::currentAppName() const
 }
 
 // Create a new activity and bring it to the top of the stack, 
-// using appName to specify which Activity will be created,
+// using activityName to specify which Activity will be created,
 // using intentPtr to specify your intend (optionally).
-bool ActivityStack::push(const char* appName, Intent* intentPtr)
+bool ActivityStack::push(const char* activityName, Intent* intentPtr)
 {
     bool ret = false;
 
     int temp_status = m_status;
     if (READY == m_status) {
         m_status = PUSH;
-        ret = (innerPush(appName, intentPtr) != NULL);
+        ret = (innerPush(activityName, intentPtr) != NULL);
         m_status = READY;
         if (ret == FALSE)
             m_status = temp_status;
@@ -78,6 +78,22 @@ bool ActivityStack::pop()
     return ret;
 }
 
+
+void ActivityStack::clear()
+{
+    while (pop());
+}
+
+void ActivityStack::dump()
+{
+    ActivityCollection::iterator it;
+    printf(".\n");
+    printf("├── Activity Stack\n");
+    for (it = m_activities.begin(); it != m_activities.end(); ++it) {
+        printf("│   ├──%s\n", it->first.c_str());
+    }
+}
+
 // Back to previous view
 bool ActivityStack::back()
 {
@@ -96,22 +112,22 @@ bool ActivityStack::back()
 bool ActivityStack::home()
 {
     if (NULL == top()) {
-        assert (0);
+        db_error("Activity stack is empty!\n");
         return false;
     }
     if (0 == top()->onHome()) {
-        switchTo("ActivityDesktop");
+        navigateTo("HomeActivity");
         return true;
     }
     return false;
 }
 
-void ActivityStack::switchTo(const char* appName, Intent* intentPtr)
+void ActivityStack::navigateTo(const char* activityName, Intent* intentPtr)
 {
-    Activity* next = searchActivityByName(appName);
+    Activity* next = searchActivityByName(activityName);
     
     if (NULL == next) {
-        push(appName, intentPtr);
+        push(activityName, intentPtr);
     }
     else {
         if (READY == m_status) {
@@ -124,9 +140,9 @@ void ActivityStack::switchTo(const char* appName, Intent* intentPtr)
 
 
 // private:
-Activity* ActivityStack::innerPush(const char* appName, Intent* intentPtr)
+Activity* ActivityStack::innerPush(const char* activityName, Intent* intentPtr)
 {
-    Activity* next = ActivityFactory::singleton()->create(appName);
+    Activity* next = ActivityFactory::singleton()->create(activityName);
     Activity* prev = top();
 
     //assert(NULL != next);
@@ -134,11 +150,10 @@ Activity* ActivityStack::innerPush(const char* appName, Intent* intentPtr)
         return NULL;
 
     // push the new activity into stack
-    m_activities.push_back(ActivityEntry(appName, next));
-    db_debug(">>>>>>>> push activity: %s %p\n", appName, top());
+    m_activities.push_back(ActivityEntry(activityName, next));
+    db_debug(">>>>>>>> push activity: %s %p\n", activityName, top());
 
     // send intend to the new activity
-    //SendNotifyMessage(next->hwnd(), MSG_USER_APP_DATA, (DWORD)intentPtr, 0);
     SendMessage(next->hwnd(), Activity::MSG_INTENT, (DWORD)intentPtr, 0);
 
     next->hide();
@@ -243,11 +258,11 @@ Activity* ActivityStack::_underTop() const
         return NULL;
 }
 
-Activity* ActivityStack::searchActivityByName(std::string appName)
+Activity* ActivityStack::searchActivityByName(std::string activityName)
 {
     ActivityCollection::iterator it;
     for (it = m_activities.begin(); it != m_activities.end(); ++it) {
-        if (appName == it->first) {
+        if (activityName == it->first) {
             return it->second;
         }
     }

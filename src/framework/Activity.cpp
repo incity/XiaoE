@@ -20,7 +20,7 @@
 //5. Your project's .h files.
 #include "utility.h"
 #include "ContentResolver.h"
-
+#include "ActivityStack.h"
 
 ActivityFactory *ActivityFactory::s_single = NULL;
 
@@ -40,7 +40,7 @@ Activity::~Activity()
 int Activity::create() 
 {
     db_msg("create called!\n");
-
+    
     m_hwnd = createHWND();
 
     db_msg("created window by createHWND: %p!\n", m_hwnd);
@@ -58,13 +58,17 @@ int Activity::create()
 // show the window of this activity
 void Activity::show()
 {
+    db_debug("show window[@0x%x] >>\n", m_hwnd);
     ShowWindow(m_hwnd, SW_SHOWNORMAL);
+    ACTIVITYSTACK->dump();
 }
 
 // hide the window of this activity
 void Activity::hide()
 {
+    db_debug("hide window[@0x%x] >>\n", m_hwnd);
     ShowWindow(m_hwnd, SW_HIDE);
+    ACTIVITYSTACK->dump();
 }
 
 // get snapshot of this activity

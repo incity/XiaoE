@@ -21,13 +21,13 @@
 #include <mgeff/mgeff.h>
 #include <mgplus/mgplus.h>
 #include <mgncs/mgncs.h>
+#include <mgncs4touch/mgncs4touch.h>
 
 #include "debug.h"
 #include "ContentValues.h"
 
+#undef LOG_TAG
 #define LOG_TAG "Activity"
-
-#define NCS_EVENT_HANDLER_CAST(func) reinterpret_cast<void*>(func)
 
 class ContentResolver;
 
@@ -230,6 +230,7 @@ public:
             }
         }
         m_activities.insert(i, info);
+        db_info("register [%s] activity...OK\n", name);
         return 0;
     }
     Activity *create(const char* name) {

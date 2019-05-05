@@ -1,0 +1,12 @@
+prefix=/home/suyc/V3S/camdroid/device/softwinner/tiger-cdr/app/XiaoE/3rd-party
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: mGNCS
+Description: The New Control Set of MiniGUI
+Version: 1.2.4
+Requires:
+Libs: -L${libdir} -lmgncs  -L/home/suyc/V3S/camdroid/device/softwinner/tiger-cdr/app/XiaoE/3rd-party/minigui/lib -lmgplus -lstdc++
+libs.private:
+CFlags: -I${includedir}

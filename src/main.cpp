@@ -25,99 +25,77 @@
 #include "ActivityStack.h"
 #include "ResourceManager.h"
 
+#undef LOG_TAG
 #define LOG_TAG "Main"
 #define SCREEN_IDLE_TIMER_ID	1
 #define SCREEN_IDLE_TIMER	(30*100)
-
-static BOOL delayLoadRes ();
 
 /* 
  * this is initialize and finalize function, please call it when desktop
  * strat and end.
  */
-BOOL initializeEnvironment (void)
+BOOL initializeEnvironment(void)
 {
     Init32MemDC();
-    ncsInitialize ();
+    ncsInitialize();
     ncs4TouchInitialize();
-    delayLoadRes();
-
     return TRUE;
 }
 
-void finalizeEnvironment ()
+void finalizeEnvironment()
 {
     ncs4TouchUninitialize();
-    ncsUninitialize ();
+    ncsUninitialize();
     Release32MemDC();
 }
 
-static BOOL idleHandler(HWND hwnd, LINT timer_id, DWORD tick_count)
+static BOOL screenIdleHandler(HWND hwnd, LINT timer_id, DWORD tick_count)
 {
+    db_debug("screen idle.\n");
     Activity* currApp = ACTIVITYSTACK->top();
 
     if (currApp) {
-        assert (IsMainWindow (currApp->hwnd ()));
-        if (SendMessage(currApp->hwnd (), Activity::MSG_SCREENSAVE, 0, 0) != 0) {
+        HWND hwnd = currApp->hwnd();
+        assert(IsMainWindow(hwnd));
+        int ret = SendMessage(hwnd, Activity::MSG_SCREENSAVE, 0, 0);
+        db_debug("Could do screensave?...(%s)", ret?"yes":"no");
+        if ( ret != 0) {
+            // 返回到Home，应用可以通过重写Activity::onHome方法来禁止返回Home
+            // onHome() 返回 1表示当前界面禁止(ACTIVITYSTACK->home())返回Home
             ACTIVITYSTACK->home();
+            ACTIVITYSTACK->push("BlackScreenActivity");
         }
-
     }
     
     return TRUE;
 }
 
-static BOOL delayLoadRes ()
+static LRESULT DesktopProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static int step = 0;
-    static RES_NODE res_list[] =
-    {
-        #include "./res/resource"
-        { NULL, 0, 0, 0, 0}
-    };
-
-    if (step > 10) {
-        return TRUE;
-    }
-
-    DWORD tick = GetTickCount();
-    int count = StepLoadRes(res_list, step);
-    db_info("StepLoadRes>> step: %d count: %d used time: %ld\n", step, count, GetTickCount() - tick);
-
-    step++;
-    return TRUE;
-}
-
-static LRESULT ActivityLoaderProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message) {
+    switch(message) {
         case MSG_CREATE:
         {
-            // load resource
-#ifdef STEPLOADRES
-            SetTimerEx (hWnd, LOAD_RESOURCE_TIMER_ID, LOAD_RESOURCE_TIMER, (TIMERPROC)delayLoadRes);
-#else
-
-#endif
-            ACTIVITYSTACK->push("ScreenLockActivity");
+            mGEffInit();
+            
+            ResourceManager* rm = ResourceManager::getInstance();
+            rm->lazyLoad();
+            
+            ACTIVITYSTACK->push("HomeActivity");
         }
         break;
-        case MSG_PAINT:
+        /*case MSG_PAINT:
         {
-        }
-        return 0; 
-        case MSG_CLOSE:
-        {
-            for (;;) {
-                if (ACTIVITYSTACK->depth() == 0) {
-                    break;
-                }
+            HDC hdc = BeginPaint(hWnd);
+            RECT rc;
+            GetClientRect(hWnd, &rc);
 
-                ACTIVITYSTACK->pop();
-            }
+            ncsCommRDRFillHalfRoundRect(hdc, &rc, 0, 0, COLOR_black, 0);
+            EndPaint(hWnd, hdc);
         }
-        
-        DestroyMainWindow(hWnd);
+        return 0;*/
+        case MSG_CLOSE:
+            ACTIVITYSTACK->clear();
+            DestroyMainWindow(hWnd);
         break;
         default:
             break;
@@ -128,23 +106,26 @@ static LRESULT ActivityLoaderProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 
 int MiniGUIMain(int argc, const char* argv[])
 {
-    initializeEnvironment ();
+    initializeEnvironment();
     
     MSG Msg;
     HWND hMainWnd;
     MAINWINCREATE CreateInfo;
 
+    ResourceManager* rm = ResourceManager::getInstance();
+    rm->lazyLoad();
+    
     int screenW = GetGDCapability(HDC_SCREEN,GDCAP_HPIXEL);
-    int screenH =GetGDCapability(HDC_SCREEN,GDCAP_VPIXEL);
+    int screenH = GetGDCapability(HDC_SCREEN,GDCAP_VPIXEL);
     
     memset(&CreateInfo, 0, sizeof(CreateInfo));
     CreateInfo.dwStyle = WS_NONE;
     CreateInfo.dwExStyle = WS_EX_NONE;
-    CreateInfo.spCaption = "ActivityLoader";
+    CreateInfo.spCaption = "Desktop";
     CreateInfo.hMenu = 0;
     //CreateInfo.hCursor = GetSystemCursor(0);
     CreateInfo.hIcon = 0;
-    CreateInfo.MainWindowProc = ActivityLoaderProc;
+    CreateInfo.MainWindowProc = DesktopProc;
     CreateInfo.lx = 0;
     CreateInfo.ty = 0;
     CreateInfo.rx = screenW;
@@ -153,6 +134,36 @@ int MiniGUIMain(int argc, const char* argv[])
     CreateInfo.dwAddData = 0;
     CreateInfo.hHosting = HWND_DESKTOP;
 
-    finalizeEnvironment (); 
+    hMainWnd = CreateMainWindow(&CreateInfo);
+    if (hMainWnd == HWND_INVALID) {
+        assert(0);
+        return -1;
+    }
+
+    SetTimerEx(hMainWnd, SCREEN_IDLE_TIMER_ID, SCREEN_IDLE_TIMER,(TIMERPROC)screenIdleHandler);
+    
+    while (GetMessage(&Msg, hMainWnd)) {
+        TranslateMessage(&Msg);
+        
+        if (Msg.message >= MSG_FIRSTMOUSEMSG && Msg.message <= MSG_LASTMOUSEMSG) {
+            ResetTimerEx(hMainWnd, SCREEN_IDLE_TIMER_ID, SCREEN_IDLE_TIMER,(TIMERPROC)screenIdleHandler);
+        }
+
+        DispatchMessage(&Msg);
+#if 0
+        if (Msg.message != MSG_IDLE)
+            db_debug("Activity[@%p] <= %s(0x%lx, 0x%lx)\n", 
+                Msg.hwnd, Message2Str(Msg.message), Msg.wParam, Msg.lParam);
+#endif
+    }
+    
+    KillTimer(hMainWnd, SCREEN_IDLE_TIMER_ID);
+    MainWindowThreadCleanup(hMainWnd);
+    
+    finalizeEnvironment();
+
+    mGEffDeinit();
+    rm->unload();
+    db_info("XiaoE (Normal) Exit.");
     return 0;
 }

@@ -31,16 +31,17 @@ public:
     Activity* top() const;
 
     // return activity name of current app
-    const char* currentAppName() const;
+    const char* currentActivityName() const;
 
     // Create a new activity and bring it to the top of the stack, 
-    // using appName to specify which Activity will be created,
+    // using activityName to specify which Activity will be created,
     // using intentPtr to specify your intend (optionally).
-    bool push(const char* appName, Intent* intentPtr = NULL);
+    bool push(const char* activityName, Intent* intentPtr = NULL);
 
     // Remove the top activity from the stack, and send MSG_CLOSE message to 
     // the window of the activity, instead of destroying it directly.
     bool pop();
+    void clear();
 
     // Back to previous view
     bool back();
@@ -51,18 +52,19 @@ public:
     // get depth of the stack
     int depth() const { return m_activities.size(); }
 
-    // This method will find the first Activity named 'appName' in the stack from top to bottom,
+    // This method will find the first Activity named 'activityName' in the stack from top to bottom,
     // if the Activity is existed, then pop to that Activity by calling popTo method;
-    // if the Activity is not existed, then create a new Activity named appName, and push it into the stack.
-    void switchTo(const char* appName, Intent* intentPtr = NULL);
-    
+    // if the Activity is not existed, then create a new Activity named activityName, and push it into the stack.
+    void navigateTo(const char* activityName, Intent* intentPtr = NULL);
+
+    void dump();
 private:
 
     // constructor & desctructor, for internal use only
     ActivityStack();
     virtual ~ActivityStack();
 
-    Activity* innerPush(const char* appName, Intent* intentPtr);
+    Activity* innerPush(const char* activityName, Intent* intentPtr);
     bool innerPop();
     
     // Do the same thing as pop(), but supply a parameter "which" to specify 
@@ -76,8 +78,8 @@ private:
 
     void _doSwitchEffect(Activity* prev, Activity* next, BOOL switchTo=TRUE);
 
-    // search the first Activity named 'appName' in the stack in the order from top to bottom
-    Activity* searchActivityByName(std::string appName);
+    // search the first Activity named 'activityName' in the stack in the order from top to bottom
+    Activity* searchActivityByName(std::string activityName);
     
 
     // store all activities

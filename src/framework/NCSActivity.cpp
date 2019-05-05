@@ -12,7 +12,7 @@
 #define HOOK_ONDESTROY 1
 void global_onDestroy(mWidget* self, int message)
 {
-    Activity* activity = Activity::getActivityFromHWND (self->hwnd);
+    Activity* activity = Activity::getActivityFromHWND(self->hwnd);
     if (NULL != activity) {
         NCSActivity* ncsActivity = dynamic_cast<NCSActivity*>(activity);
         assert(NULL != ncsActivity);
@@ -79,7 +79,6 @@ NCSActivity::NCSActivity(NCS_MNWND_TEMPLATE* _template) :
 
 NCSActivity::~NCSActivity()
 {
-    db_debug("<<<<<<<<<<<<<<< delete activity.");
 #if HOOK_ONDESTROY
     if (NULL != m_tmpl->handlers) { // If realloc the NCS_MNWND_TEMPLATE struct.
         NCS_MNWND_TEMPLATE* tmpl = const_cast<NCS_MNWND_TEMPLATE*>(m_tmpl);

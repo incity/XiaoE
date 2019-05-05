@@ -19,6 +19,7 @@
 //4. Other libraries' .h files.
 #include "debug.h"
 
+#undef LOG_TAG
 #define LOG_TAG "ContentProvider"
 
 

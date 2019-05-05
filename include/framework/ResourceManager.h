@@ -32,8 +32,6 @@ typedef struct _RES_NODE {
     int         step;
 } RES_NODE;
 
-extern RES_NODE res_list[];
-
 /**
  * \fn Init32MemDC (void)
  */
@@ -79,12 +77,27 @@ int StepLoadRes (RES_NODE *node_list, int step);
  * \fn LoadAllRes (RES_NODE *node_list);
  */
 #define LoadAllRes(node_list) StepLoadRes(node_list,0)
-//int LoadAllRes (RES_NODE *node_list);
 
-/**
- * \fn UnLoadAllRes (RES_NODE *node_list);
- */
-int UnLoadAllRes (RES_NODE *node_list);
+class ResourceManager;
+
+class ResourceManager
+{
+private:
+	ResourceManager();
+	~ResourceManager();
+	ResourceManager& operator=(const ResourceManager& o);
+
+public:
+    static ResourceManager* getInstance();
+    BOOL lazyLoad();
+    void unload();
+private:
+    int m_step;
+    RES_NODE *m_resources;
+    static ResourceManager *sInstance;
+};
+
+
 #ifdef __cplusplus
 }
 #endif
