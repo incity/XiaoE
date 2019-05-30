@@ -1,0 +1,3 @@
+[submodule "doc/sqlstyle.guide"]
+	path = doc/sqlstyle.guide
+	url = https://github.com/treffynnon/sqlstyle.guide.git
