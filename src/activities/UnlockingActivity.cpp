@@ -1,8 +1,11 @@
 #include "UnlockingActivity.h"
+#include "AccessController.h"
 
 AUTO_REGISTER_ACTIVITY(UnlockingActivity);
 
-#define LOG_TAG "UnlockingActivity"
+#define ACTIVITY_NAME "UnlockingActivity"
+#undef LOG_TAG
+#define LOG_TAG ACTIVITY_NAME
 
 enum {
     ID_BUTTON_MAIN = 100,
@@ -10,16 +13,107 @@ enum {
     ID_PASSWORDBOX,
 };
 
+// +++++++++++++++++++++++++++++++++++++++++++++
+// |   1. public members                       |
+// +++++++++++++++++++++++++++++++++++++++++++++
+
+// +++++++++++++++++++++++++++
+// |   1.6. constructors     |
+// +++++++++++++++++++++++++++
+UnlockingActivity::UnlockingActivity()
+                 : XiaoEActivity(&UnlockingActivity::window_template)
+{
+    m_style = STYLE_ZOOM;
+    background_image = (BITMAP*)calloc(1, sizeof(BITMAP));
+    assert(background_image);
+    
+    LoadBitmap(HDC_SCREEN, background_image, 
+                "./res/images/unlocking/background.png");
+}
+
+// +++++++++++++++++++++++++++
+// |   1.7. destructors      |
+// +++++++++++++++++++++++++++
+UnlockingActivity::~UnlockingActivity()
+{
+    UnloadBitmap(background_image);
+    free(background_image);
+}
+
+// +++++++++++++++++++++++++++++++++++++++++++++
+// |   3. private members                      |
+// +++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++
+// |  control properties  |
+// ++++++++++++++++++++++++
+static NCS_PROP_ENTRY _home_button_props[] = {
+    {0, 0},
+};
+    
+static const char *dialpad_key_numbers[] = {
+    "1", "2", "3", "[./res/images/unlocking/delete_key.png]",
+    "4", "5", "6", "0",
+    "7", "8", "9", "#"
+};
+
+static NCS_PROP_ENTRY dialpad_props[] = {
+	{NCSP_DIALPAD_KEYPAD_NUMBER_ARRAY, (DWORD)dialpad_key_numbers},
+	{0, 0}
+};
+
+// ++++++++++++++++++++++++
+// |  control render      |
+// ++++++++++++++++++++++++
+static NCS_RDR_INFO _home_button_render[] = {
+    {"skin", "skin", NULL}
+};
+
+// ++++++++++++++++++++++++
+// |  control handlers    |
+// ++++++++++++++++++++++++
+static BOOL _home_button_onCreate(mButton* , DWORD);
+static void _home_button_notify(mWidget *, int , int , DWORD);
+static NCS_EVENT_HANDLER _home_button_handlers [] = {
+    {MSG_CREATE, NCS_EVENT_HANDLER_CAST(_home_button_onCreate)},
+    NCS_MAP_NOTIFY(NCSN_WIDGET_CLICKED, _home_button_notify),
+	{0, NULL}	
+};
+
+static void _dialpad_notify(mWidget *, int, int, DWORD);
+static NCS_EVENT_HANDLER dialpad_handlers[] = {
+    NCS_MAP_NOTIFY(NCSN_DIALPAD_KEYPAD_CLICKED, _dialpad_notify),
+    {0, NULL}
+};
+
+static void _passwordbox_notify(mPasswordBox *, int, int, DWORD);
+static NCS_EVENT_HANDLER passwordbox_handlers[] = {
+    NCS_MAP_NOTIFY(NCSN_PASSWORDBOX_ENTERED, _passwordbox_notify),
+    {0, NULL}
+};
+
+// +++++++++++++++++++++++++++
+// |   3.8. member functions |
+// +++++++++++++++++++++++++++
+BOOL UnlockingActivity::onCreate(mMainWnd* self, DWORD dwAddData )
+{
+    db_debug(" >> \n");
+    mPasswordBox *pb = (mPasswordBox*)_c(self)->getChild (self, ID_PASSWORDBOX);
+    mDialPad *dp = (mDialPad*)_c(self)->getChild (self, ID_DIALPAD);
+
+    _c(dp)->setProperty(dp, NCSP_DIALPAD_TARGET_HWND, (DWORD)pb->hwnd);
+    return TRUE;
+}
+
 void UnlockingActivity::onPaint(mMainWnd *self, HDC hdc, const CLIPRGN* inv)
 {
 }
 
-BOOL UnlockingActivity::onScreensave(mWidget* self, int message, WPARAM wParam, LPARAM lParam)
+BOOL UnlockingActivity::onScreensave(mMainWnd* self, int message, WPARAM wParam, LPARAM lParam)
 {
     return TRUE; // enable screensave
 }
 
-BOOL UnlockingActivity::onEraseBackground(mWidget *self, HDC hdc, const PRECT clip)
+BOOL UnlockingActivity::onEraseBackground(mMainWnd *self, HDC hdc, const PRECT clip)
 {
     RECT rc;
     GetClientRect(self->hwnd, &rc);
@@ -31,17 +125,7 @@ BOOL UnlockingActivity::onEraseBackground(mWidget *self, HDC hdc, const PRECT cl
     return TRUE;
 }
 
-BOOL UnlockingActivity::onCreate(mMainWnd* self, DWORD dwAddData )
-{
-    db_debug(" >> \n");
-    mPasswordBox *pb = (mPasswordBox*)_c(self)->getChild (self, ID_PASSWORDBOX);
-    mDialPad *dp = (mDialPad*)_c(self)->getChild (self, ID_DIALPAD);
-
-    _c(dp)->setProperty(dp, NCSP_DIALPAD_TARGET_HWND, (DWORD)pb->hwnd);
-    return TRUE;
-}
-
-static BOOL home_button_onCreate(mButton* self, DWORD dwAddData )
+static BOOL _home_button_onCreate(mButton* self, DWORD add_data )
 {
     DWORD key = (DWORD)Str2Key("images/unlocking/home_button.png");
 
@@ -50,65 +134,44 @@ static BOOL home_button_onCreate(mButton* self, DWORD dwAddData )
     return TRUE;
 }
 
-static NCS_RDR_INFO home_button_render[] = {
-    {"skin", "skin", NULL}
-};
-
-static NCS_PROP_ENTRY home_button_props[] = {
-    {0, 0},
-};
-
-static void home_button_notify(mWidget *self, int id, int nc, DWORD add_data)
+static void _home_button_notify(mWidget *self, int id, int nc, DWORD add_data)
 {
-    ACTIVITYSTACK->back();
+    ACTIVITYSTACK.back();
 }
 
-static NCS_EVENT_HANDLER home_button_handlers [] = {
-    {MSG_CREATE, NCS_EVENT_HANDLER_CAST(home_button_onCreate)},
-    NCS_MAP_NOTIFY(NCSN_WIDGET_CLICKED, home_button_notify),
-	{0, NULL}	
-};
-
-NCS_EVENT_HANDLER UnlockingActivity::message_handlers [] = {
-    {MSG_CREATE, NCS_EVENT_HANDLER_CAST(UnlockingActivity::onCreate)},
-    {MSG_PAINT, NCS_EVENT_HANDLER_CAST(UnlockingActivity::onPaint)},
-    {MSG_ERASEBKGND, NCS_EVENT_HANDLER_CAST(UnlockingActivity::onEraseBackground)},
-    {Activity::MSG_SCREENSAVE, NCS_EVENT_HANDLER_CAST(UnlockingActivity::onScreensave)},
-    {0, NULL}
-};
-    
-static const char *dialpad_key_numbers[] = {
-    "1", "2", "3", "[./res/images/unlocking/delete_key.png]",
-    "4", "5", "6", "0",
-    "7", "8", "9", "#"
-};
-
-static void dialpad_notify(mWidget *self, int id, int nc, DWORD add_data)
+static void _dialpad_notify(mWidget *self, int id, int nc, DWORD add_data)
 {
 }
 
-static void passwordbox_notify(mPasswordBox *self, int id, int nc, DWORD add_data)
+// the callback is call within the main UI thread.
+static void _on_password_validated(mMainWnd *self, DWORD param)
 {
-    _c(self)->clear(self);
+    printf("%s %d : param=0x%lx \n", __func__, __LINE__, param);
+    mPasswordBox *pb = (mPasswordBox *)ncsGetChildObj(self->hwnd, ID_PASSWORDBOX);
+    _c(pb)->clear(pb);
+   ACTIVITYSTACK.back(); 
 }
 
-static NCS_EVENT_HANDLER dialpad_handlers [] = {
-    NCS_MAP_NOTIFY(NCSN_DIALPAD_KEYPAD_CLICKED, dialpad_notify),
-    {0, NULL}
-};
+static void _passwordbox_notify(mPasswordBox *self, int id, int nc, DWORD add_data)
+{
+    db_debug(" >> \n");
+    size_t len = strlen(self->password);
+    if(len) {
+        ACCESSCONTROLLER.work("PasswordValidator",
+                              self->password,
+                              (Handler)_on_password_validated,
+                              NULL,
+                              GetMainWindowHandle(self->hwnd));
+        //_c(self)->clear(self);
+    }
+}
 
+// +++++++++++++++++++++++++++
+// |   3.9. member variables |
+// +++++++++++++++++++++++++++
+BITMAP* UnlockingActivity::background_image = NULL;
 
-static NCS_EVENT_HANDLER passwordbox_handlers [] = {
-    NCS_MAP_NOTIFY(NCSN_PASSWORDBOX_ENTERED, passwordbox_notify),
-    {0, NULL}
-};
-    
-static NCS_PROP_ENTRY dialpad_props [] = {
-	{NCSP_DIALPAD_KEYPAD_NUMBER_ARRAY, (DWORD)dialpad_key_numbers},
-	{0, 0}
-};
-
-NCS_WND_TEMPLATE UnlockingActivity::control_template[] = {
+NCS_WND_TEMPLATE UnlockingActivity::control_templates[] = {
     {
         NCSCTRL_BUTTON,
         ID_BUTTON_MAIN,
@@ -116,9 +179,10 @@ NCS_WND_TEMPLATE UnlockingActivity::control_template[] = {
         WS_VISIBLE | NCSS_BUTTON_IMAGE,
         WS_EX_TRANSPARENT,
         NULL,
-        home_button_props,
-        home_button_render,
-        home_button_handlers, NULL, 0, 0
+        _home_button_props,
+        _home_button_render,
+        _home_button_handlers,
+        CTRL_TEMPL_ZERO_AFTER_HANDLERS
     },
     {
         NCSCTRL_DIALPAD, 
@@ -130,9 +194,7 @@ NCS_WND_TEMPLATE UnlockingActivity::control_template[] = {
         dialpad_props, //props,
         NULL, //rdr_info
         dialpad_handlers, //handlers,
-        NULL, //controls
-        0,
-        0 //add data
+        CTRL_TEMPL_ZERO_AFTER_HANDLERS
     },
     {
         NCSCTRL_PASSWORDBOX, 
@@ -144,41 +206,10 @@ NCS_WND_TEMPLATE UnlockingActivity::control_template[] = {
         NULL, //props,
         NULL, //rdr_info
         passwordbox_handlers, //handlers,
-        NULL, //controls
-        0,
-        0 //add data
+        CTRL_TEMPL_ZERO_AFTER_HANDLERS
     }
 };
 
-NCS_MNWND_TEMPLATE UnlockingActivity::window_template = {
-        NCSCTRL_DIALOGBOX, 
-        1,
-        0, 0, 800, 480,
-        WS_NONE,
-        WS_EX_AUTOSECONDARYDC,
-        NULL, /* caption */
-        NULL,
-        NULL,
-        UnlockingActivity::message_handlers,
-        UnlockingActivity::control_template,
-        ARRAY_LEN(UnlockingActivity::control_template),
-        0,
-        0, 0,
-};
-
-BITMAP* UnlockingActivity::background_image = NULL;
-
-UnlockingActivity::UnlockingActivity() : NCSActivity(&UnlockingActivity::window_template){
-    m_style = STYLE_ZOOM;
-    background_image = (BITMAP*)calloc(1, sizeof(BITMAP));
-    assert(background_image);
-    
-    LoadBitmap(HDC_SCREEN, background_image, 
-        "./res/images/unlocking/background.png");
-}
-
-UnlockingActivity::~UnlockingActivity() {
-    UnloadBitmap(background_image);
-    free(background_image);
-}
+NCS_MNWND_TEMPLATE UnlockingActivity::window_template = 
+    XIAOE_WINDOW_TEMPLATE(ACTIVITY_NAME, UnlockingActivity::control_templates);
 

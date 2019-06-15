@@ -1,14 +1,7 @@
-/*!============================================================================
- * @file ResourceManager.cc 
- * @Synopsis Resource Manager source. 
- * @author WangXuBin
- * @version 1.0
- *  Company: Beijing Feynman Software Technology Co., Ltd.
- */
-
 #include "debug.h"
 #include "ResourceManager.h"
 
+#undef LOG_TAG
 #define LOG_TAG "ResourceManager"
 
 static HDC s_hw_memRefDC = HDC_INVALID;

@@ -84,7 +84,7 @@ extern "C"
 		ALOG(LOG_WARN, LOG_TAG, "<line[%04d] %s()> " fmt, __LINE__, __FUNCTION__, ##arg); \
 	} while(0)
 #else
-#define db_warm(fmt, arg...)
+#define db_warn(fmt, arg...)
 #endif
 
 #ifdef DB_INFO
@@ -151,6 +151,12 @@ extern "C"
 #define db_msg(fmt, ...)
 #endif /* DB_MSG */
 
+#endif
+
+#if 0
+#define hexdump(a,b) do{} while (0)
+#else
+void hexdump(void *_data, unsigned len);
 #endif
 
 #endif    /* __DEBUG_H__ */

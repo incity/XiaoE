@@ -1,11 +1,3 @@
-/*! ============================================================================
- * @file NCSNCSActivity.cc 
- * @Synopsis  
- * @author DongKai
- * @version 1.0
- *  Company: Beijing Feynman Software Technology Co., Ltd.
- */
-
 #include <cassert>
 #include "NCSActivity.h"
 
@@ -56,7 +48,7 @@ NCSActivity::NCSActivity(NCS_MNWND_TEMPLATE* _template) :
 
                     break;
                 } else if (0 == _template->handlers[i].message && 
-                        NULL == _template->handlers[i].handler) {
+                    NULL == _template->handlers[i].handler) {
                     m_onDestroyOrigin = NULL;
                     tmpl->handlers = (NCS_EVENT_HANDLER*)calloc(1, sizeof(NCS_EVENT_HANDLER) * (i + 2));
                     memcpy(tmpl->handlers, store, sizeof(NCS_EVENT_HANDLER) * i + 1);
@@ -114,7 +106,7 @@ HWND NCSActivity::createHWND()
             (m_tmpl, HWND_DESKTOP);
     }
     else {
-        /* TODO: Create main window frome ID is not implemented. */
+        /* TODO: Create main window from ID is not implemented. */
 #if 0
         window = (mWidget*)ncsCreateMainWindowIndirectFromID (m_hPack, Uint32 wndId,
                     HWND owner, m_hIcon, m_hMenu,

@@ -1,11 +1,3 @@
-/*! ============================================================================
- * @file ContentValues.cpp
- * @Synopsis  
- * @author DongKai
- * @version 1.0
- *  Company: Beijing Feynman Software Technology Co., Ltd.
- */
-
 #include <cassert>
 #include <sstream>
 #include "ContentValues.h"

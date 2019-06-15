@@ -16,24 +16,29 @@
 
 using namespace android;
 
+#ifdef USE_ANDROID_UTILS_SINGLETON
+ANDROID_SINGLETON_STATIC_INSTANCE(PowerManager) ;
+#endif
+
+#ifndef USE_ANDROID_UTILS_SINGLETON
 PowerManager* PowerManager::s_single = NULL;
 
 // get the single instance of ActivityStack
-PowerManager* PowerManager::singleton()
+PowerManager& PowerManager::singleton()
 {
     if (NULL == s_single) {
         s_single = new PowerManager();
     }
-    return s_single;
+    return *s_single;
 }
+#endif
 
 PowerManager::PowerManager()
-    : mDispFd(0),
-      mState(SCREEN_ON)
+    : mDispFd(0)
 {
     mDispFd = open(DISP_DEV, O_RDWR);
     if (mDispFd < 0) {
-        db_msg("fail to open %s", DISP_DEV);
+        db_error("fail to open %s", DISP_DEV);
     }
 }
 
@@ -42,23 +47,9 @@ PowerManager::~PowerManager()
     close(mDispFd);
 }
 
-void PowerManager::screenSwitch()
+void PowerManager::shutdown()
 {
-    Mutex::Autolock _l(mLock);
-
-    if (mState == SCREEN_ON) {
-        screenOff();
-    } else {
-        screenOn();
-    }
-
-    pulse();
-}
-
-bool PowerManager::isScreenOn()
-{
-    Mutex::Autolock _l(mLock);
-    return (mState == SCREEN_ON);
+    android_reboot(ANDROID_RB_POWEROFF, 0, 0);
 }
 
 void PowerManager::reboot()
@@ -86,8 +77,7 @@ int PowerManager::screenOff()
         db_error("fail to set screen on\n");
         return -1;
     }
-
-    mState = SCREEN_OFF;
+    
     return 0;
 }
 
@@ -112,6 +102,6 @@ int PowerManager::screenOn()
         return -1;
     }
 
-    mState = SCREEN_ON;
     return 0;
 }
+

@@ -1,10 +1,3 @@
-/*! ============================================================================
- * @file ContentResolver.cpp
- * @Synopsis  
- * @author DongKai
- * @version 1.0
- *  Company: Beijing Feynman Software Technology Co., Ltd.
- */
 //1. The .cc .cpp .cxx related header files
 #include "ContentResolver.h"
 

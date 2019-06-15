@@ -1,11 +1,3 @@
-/*! ============================================================================
- * @file Utility.cc 
- * @Synopsis  
- * @author DongKai
- * @version 1.0
- *  Company: Beijing Feynman Software Technology Co., Ltd.
- */
-
 #include "utility.h"
 //#include <libxml/parser.h>
 //#include <libxml/xpath.h>

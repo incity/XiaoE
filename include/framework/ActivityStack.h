@@ -7,25 +7,40 @@
  */
 
 // refactored @ 2010-11-22 by min
-
 #ifndef  _ACTIVITYSTACK_H
 #define  _ACTIVITYSTACK_H
-
+//#undef USE_ANDROID_UTILS_SINGLETON
+//1. The .cc .cpp .cxx related header files
+//2. C system include files.
+//3. C++ system include files.
 #include <string>
 #include <vector>
+#ifdef USE_ANDROID_UTILS_SINGLETON
+    #include <utils/Singleton.h>
+    using namespace android;
+#endif
+//4. Other libraries' .h files.
+
+//5. Your project's .h files.
 #include "Activity.h"
 
 /** 
  * @synopsis  A stack for activities manager.
  */
+#ifdef USE_ANDROID_UTILS_SINGLETON
+class ActivityStack : public Singleton<ActivityStack>
+#else
 class ActivityStack
+#endif
 {
 public:
     typedef std::pair<std::string, Activity*> ActivityEntry;
     typedef std::vector<ActivityEntry> ActivityCollection;
-        
+    
+#ifndef USE_ANDROID_UTILS_SINGLETON
     // get the single instance of ActivityStack
-    static ActivityStack* singleton();
+    static ActivityStack& singleton();
+#endif
 
     // get the top activity in stack
     Activity* top() const;
@@ -59,8 +74,10 @@ public:
 
     void dump();
 private:
-
     // constructor & desctructor, for internal use only
+#ifdef USE_ANDROID_UTILS_SINGLETON
+    friend class Singleton<ActivityStack>;
+#endif
     ActivityStack();
     virtual ~ActivityStack();
 
@@ -92,11 +109,17 @@ private:
         POP,
     };
 
+#ifndef USE_ANDROID_UTILS_SINGLETON
     // store the single instance of ActivityStack
     static ActivityStack* s_single;
+#endif
 };
 
-#define ACTIVITYSTACK   ActivityStack::singleton()
+#ifdef USE_ANDROID_UTILS_SINGLETON
+    #define ACTIVITYSTACK   ActivityStack::getInstance()
+#else
+    #define ACTIVITYSTACK   ActivityStack::singleton()
+#endif
 
 #endif   /* ----- #ifndef ACTIVITYSTACK_INC  ----- */
 

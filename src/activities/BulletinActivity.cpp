@@ -2,7 +2,9 @@
 
 AUTO_REGISTER_ACTIVITY(BulletinActivity);
 
-#define LOG_TAG "BulletinActivity"
+#define ACTIVITY_NAME "BulletinActivity"
+#undef LOG_TAG
+#define LOG_TAG ACTIVITY_NAME
 
 enum {
     ID_BUTTON_MAIN = 100,
@@ -10,63 +12,41 @@ enum {
     ID_VTEXTVIEW,
 };
 
-void BulletinActivity::onPaint(mMainWnd *self, HDC hdc, const CLIPRGN* inv)
-{
-}
+// +++++++++++++++++++++++++++++++++++++++++++++
+// |   1. public members                       |
+// +++++++++++++++++++++++++++++++++++++++++++++
 
-BOOL BulletinActivity::onScreensave(mWidget* self, int message, WPARAM wParam, LPARAM lParam)
+// +++++++++++++++++++++++++++
+// |   1.6. constructors     |
+// +++++++++++++++++++++++++++
+BulletinActivity::BulletinActivity()
+                 : XiaoEActivity(&BulletinActivity::window_template)
 {
-    return TRUE; // enable screensave
-}
-
-BOOL BulletinActivity::onEraseBackground(mWidget *self, HDC hdc, const PRECT clip)
-{
-    RECT rc;
-    GetClientRect(self->hwnd, &rc);
-
-    if(background_image) {
-        FillBoxWithBitmap(hdc, 0, 0, RECTW(rc), RECTH(rc), background_image);
-    }
+    m_style = STYLE_ZOOM;
+    background_image = (BITMAP*)calloc(1, sizeof(BITMAP));
+    assert(background_image);
     
-    return TRUE;
+    LoadBitmap(HDC_SCREEN, background_image, 
+        "./res/images/unlocking/background.png");
 }
 
-BOOL BulletinActivity::onCreate(mMainWnd* self, DWORD dwAddData )
+// +++++++++++++++++++++++++++
+// |   1.7. destructors      |
+// +++++++++++++++++++++++++++
+BulletinActivity::~BulletinActivity()
 {
-    db_debug(" >> \n");
-
-    return TRUE;
+    UnloadBitmap(background_image);
+    free(background_image);
 }
 
-static BOOL home_button_onCreate(mButton* self, DWORD dwAddData )
-{
-    DWORD key = (DWORD)Str2Key("images/unlocking/home_button.png");
-
-    ncsSetElement(self, NCS_IMAGE_BUTTON, key);
-
-    return TRUE;
-}
-
-static NCS_RDR_INFO home_button_render[] = {
-    {"skin", "skin", NULL}
-};
-
+// +++++++++++++++++++++++++++++++++++++++++++++
+// |   3. private members                      |
+// +++++++++++++++++++++++++++++++++++++++++++++
+// ++++++++++++++++++++++++
+// |  control properties  |
+// ++++++++++++++++++++++++
 static NCS_PROP_ENTRY home_button_props[] = {
     {0, 0},
-};
-
-static void home_button_notify(mWidget *self, int id, int nc, DWORD add_data)
-{
-    ACTIVITYSTACK->back();
-}
-
-static NCS_EVENT_HANDLER home_button_handlers [] = {
-    {MSG_CREATE, NCS_EVENT_HANDLER_CAST(home_button_onCreate)},
-    NCS_MAP_NOTIFY(NCSN_WIDGET_CLICKED, home_button_notify),
-    {MSG_LBUTTONDOWN, NCS_EVENT_HANDLER_CAST(SpeedMeterMessageHandler)},
-    {MSG_LBUTTONUP, NCS_EVENT_HANDLER_CAST(SpeedMeterMessageHandler)},
-    {MSG_MOUSEMOVE, NCS_EVENT_HANDLER_CAST(SpeedMeterMessageHandler)},
-	{0, NULL}	
 };
 
 static NCS_PROP_ENTRY htextview_props[] = {
@@ -81,16 +61,83 @@ static NCS_PROP_ENTRY vtextview_props[] = {
     {0, 0},
 };
 
-
-NCS_EVENT_HANDLER BulletinActivity::message_handlers [] = {
-    {MSG_CREATE, NCS_EVENT_HANDLER_CAST(BulletinActivity::onCreate)},
-    {MSG_PAINT, NCS_EVENT_HANDLER_CAST(BulletinActivity::onPaint)},
-    {MSG_ERASEBKGND, NCS_EVENT_HANDLER_CAST(BulletinActivity::onEraseBackground)},
-    {Activity::MSG_SCREENSAVE, NCS_EVENT_HANDLER_CAST(BulletinActivity::onScreensave)},
-    {0, NULL}
+// ++++++++++++++++++++++++
+// |  control render      |
+// ++++++++++++++++++++++++
+static NCS_RDR_INFO home_button_render[] = {
+    {"skin", "skin", NULL}
 };
 
-NCS_WND_TEMPLATE BulletinActivity::control_template[] = {
+// ++++++++++++++++++++++++
+// |  control handlers    |
+// ++++++++++++++++++++++++
+static BOOL home_button_onCreate(mButton*, DWORD);
+static void home_button_notify(mWidget *, int, int, DWORD);
+
+static NCS_EVENT_HANDLER home_button_handlers [] = {
+    {MSG_CREATE, NCS_EVENT_HANDLER_CAST(home_button_onCreate)},
+    NCS_MAP_NOTIFY(NCSN_WIDGET_CLICKED, home_button_notify),
+	{0, NULL}	
+};
+
+static NCS_EVENT_HANDLER textview_handlers [] = {
+    {MSG_LBUTTONDOWN, NCS_EVENT_HANDLER_CAST(SpeedMeterMessageHandler)},
+    {MSG_LBUTTONUP, NCS_EVENT_HANDLER_CAST(SpeedMeterMessageHandler)},
+    {MSG_MOUSEMOVE, NCS_EVENT_HANDLER_CAST(SpeedMeterMessageHandler)},
+	{0, NULL}	
+};
+
+// +++++++++++++++++++++++++++
+// |   3.8. member functions |
+// +++++++++++++++++++++++++++
+BOOL BulletinActivity::onCreate(mMainWnd* self, DWORD dwAddData )
+{
+    db_debug(" >> \n");
+
+    return TRUE;
+}
+
+void BulletinActivity::onPaint(mMainWnd *self, HDC hdc, const CLIPRGN* inv)
+{
+}
+
+BOOL BulletinActivity::onScreensave(mMainWnd* self, int message, WPARAM wParam, LPARAM lParam)
+{
+    return TRUE; // enable screensave
+}
+
+BOOL BulletinActivity::onEraseBackground(mMainWnd *self, HDC hdc, const PRECT clip)
+{
+    RECT rc;
+    GetClientRect(self->hwnd, &rc);
+
+    if(background_image) {
+        FillBoxWithBitmap(hdc, 0, 0, RECTW(rc), RECTH(rc), background_image);
+    }
+    
+    return TRUE;
+}
+
+static BOOL home_button_onCreate(mButton* self, DWORD dwAddData )
+{
+    DWORD key = (DWORD)Str2Key("images/unlocking/home_button.png");
+
+    ncsSetElement(self, NCS_IMAGE_BUTTON, key);
+
+    return TRUE;
+}
+
+static void home_button_notify(mWidget *self, int id, int nc, DWORD add_data)
+{
+    ACTIVITYSTACK.back();
+}
+
+// +++++++++++++++++++++++++++
+// |   3.9. member variables |
+// +++++++++++++++++++++++++++
+BITMAP* BulletinActivity::background_image = NULL;
+
+NCS_WND_TEMPLATE BulletinActivity::control_templates[] = {
     {
         NCSCTRL_BUTTON,
         ID_BUTTON_MAIN,
@@ -100,7 +147,8 @@ NCS_WND_TEMPLATE BulletinActivity::control_template[] = {
         NULL,
         home_button_props,
         home_button_render,
-        home_button_handlers, NULL, 0, 0
+        home_button_handlers,
+        CTRL_TEMPL_ZERO_AFTER_HANDLERS
     },
     {
         NCSCTRL_TEXTVIEW, 
@@ -111,10 +159,10 @@ NCS_WND_TEMPLATE BulletinActivity::control_template[] = {
         "踩着自己的节奏 中国扩大金融开放",
         htextview_props, //props,
         NULL, //rdr_info
-        NULL, //handlers,
-        NULL, //controls
-        0,
-        0 //add data
+        textview_handlers, //handlers,
+        NULL, 0, 0, 0,
+        "*-simfang-rrT*nn-*-32-UTF-8",
+        CTRL_TEMPL_ZERO_AFTER_FONTNAME
     },
     {
         NCSCTRL_TEXTVIEW, 
@@ -133,42 +181,14 @@ NCS_WND_TEMPLATE BulletinActivity::control_template[] = {
         "",
         vtextview_props, //props,
         NULL, //rdr_info
-        NULL, //handlers,
-        NULL, //controls
-        0,
-        0 //add data
+        textview_handlers, //handlers,
+        NULL, 0, 0, 0,
+        //"*-simfang-drn*nn-*-23-UTF-8",
+        "*-simfang-rrT*nn-*-26-UTF-8",
+        CTRL_TEMPL_ZERO_AFTER_FONTNAME
     },
 };
 
-NCS_MNWND_TEMPLATE BulletinActivity::window_template = {
-        NCSCTRL_DIALOGBOX, 
-        1,
-        0, 0, 800, 480,
-        WS_NONE,
-        WS_EX_AUTOSECONDARYDC,
-        NULL, /* caption */
-        NULL,
-        NULL,
-        BulletinActivity::message_handlers,
-        BulletinActivity::control_template,
-        ARRAY_LEN(BulletinActivity::control_template),
-        0,
-        0, 0,
-};
-
-BITMAP* BulletinActivity::background_image = NULL;
-
-BulletinActivity::BulletinActivity() : NCSActivity(&BulletinActivity::window_template){
-    m_style = STYLE_ZOOM;
-    background_image = (BITMAP*)calloc(1, sizeof(BITMAP));
-    assert(background_image);
-    
-    LoadBitmap(HDC_SCREEN, background_image, 
-        "./res/images/unlocking/background.png");
-}
-
-BulletinActivity::~BulletinActivity() {
-    UnloadBitmap(background_image);
-    free(background_image);
-}
+NCS_MNWND_TEMPLATE BulletinActivity::window_template = 
+    XIAOE_WINDOW_TEMPLATE(ACTIVITY_NAME, BulletinActivity::control_templates);
 

@@ -30,7 +30,7 @@ protected:
     // 2.8. member functions
     // 2.9. member variables
 
-// 3. protected members
+// 3. private members
 private:
     // 3.1. typedefs
     // 3.2. nested enums

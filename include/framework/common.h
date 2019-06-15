@@ -1,11 +1,3 @@
-/*!============================================================================
- * @file common.hh 
- * @Synopsis  
- * @author DongKai
- * @version 1.0
- *  Company: Beijing Feynman Software Technology Co., Ltd.
- */
-
 #ifndef  COMMON_INC
 #define  COMMON_INC
 
@@ -13,11 +5,17 @@
 
 std::string stringReplace(const std::string& str, const std::string& oldVal, const std::string& newVal);
 
-struct DeleteObject {
+struct DeleteObject
+{
     template <typename T>
-        void operator()(const T* ptr) const {
+        void operator()(const T* ptr) const
+        {
             delete ptr;
         }
 };
+
+typedef unsigned long HandlerParam;
+typedef void (*Handler)(void* obj, HandlerParam);
+
 #endif   /* ----- #ifndef COMMON_INC  ----- */
 

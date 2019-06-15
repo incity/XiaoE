@@ -1,30 +1,21 @@
-/*!============================================================================
- * @file Activity.h 
- * @Synopsis  
- * @author DongKai
- * @version 1.0
- *  Company: Beijing Feynman Software Technology Co., Ltd.
- */
-
-// refactored @ 2010-11-22 by min
-
 #ifndef  ACTIVITY_INC
 #define  ACTIVITY_INC
 
+//1. The .cc .cpp .cxx related header files
+//2. C system include files.
 #include <string.h>
 #include <assert.h>
-
+//3. C++ system include files.
+//4. Other libraries' .h files.
 #include <minigui/common.h>
 #include <minigui/minigui.h>
 #include <minigui/gdi.h>
 #include <minigui/window.h>
 #include <mgeff/mgeff.h>
-#include <mgplus/mgplus.h>
-#include <mgncs/mgncs.h>
-#include <mgncs4touch/mgncs4touch.h>
-
+//5. Your project's .h files.
 #include "debug.h"
 #include "ContentValues.h"
+#include "GenericFactory.h"
 
 #undef LOG_TAG
 #define LOG_TAG "Activity"
@@ -65,13 +56,15 @@ public:
     // determine whether I need the switch effect provide by the framework
     bool needSwitchEffect() const { return m_needSwitchEffect; }
 
-    enum STYLE {
+    enum STYLE
+    {
         STYLE_PUSH = 0x01,
         STYLE_ZOOM,
         STYLE_ALPHA,
     };
 
-    enum MESSAGE {
+    enum MESSAGE
+    {
         MSG_INTENT = MSG_USER,
         MSG_SCREENSAVE,
         MSG_FRAMEWORK,
@@ -207,81 +200,14 @@ class Intent
         ExtraMap m_extras;
 };
 
-
-#include <vector>
-class ActivityFactory {
-public:
-    static ActivityFactory *singleton() {
-       if (! s_single) {
-           s_single = new ActivityFactory();
-       }
-       return s_single;
-    }
-    int registerActivity(const char *name, Activity *(*create)(void)) {
-        ActivityInfo *info = (ActivityInfo *)malloc(sizeof(*info));
-        std::vector<ActivityInfo *>::iterator i;
-
-        info->name = strdup(name);
-        info->create = create;
-
-        for (i=m_activities.begin(); i!=m_activities.end(); ++i) {
-            if (strcmp(name, (*i)->name) <= 0) {
-                break;
-            }
-        }
-        m_activities.insert(i, info);
-        db_info("register [%s] activity...OK\n", name);
-        return 0;
-    }
-    Activity *create(const char* name) {
-        for (std::vector<ActivityInfo *>::const_iterator i=m_activities.begin(); i!=m_activities.end(); ++i) {
-            if (strcmp(name, (*i)->name) == 0) {
-                Activity *ins = (*i)->create();
-                if (ins) {
-                    if (ins->create() == 0) {
-                        return ins;
-                    }else{
-                        delete ins;
-                    }
-                }
-                return NULL;
-            }
-        }
-        return NULL;
-    }
-
-    void list(void) {
-        db_info("All registered activities (total %lu):\n", (unsigned long)m_activities.size());
-        for (std::vector<ActivityInfo *>::const_iterator i=m_activities.begin(); i!=m_activities.end(); ++i) {
-            db_info("  %s (%p)\n", (*i)->name, (*i)->create);
-        }
-    }
-
-    void queryNames(std::vector<std::string> &names) {
-        for (std::vector<ActivityInfo *>::const_iterator i=m_activities.begin(); i!=m_activities.end(); ++i) {
-            names.push_back((*i)->name);
-        }
-    }
-private:
-    ActivityFactory() { }
-private:
-    typedef struct {
-        char *name;
-        Activity *(*create)(void);
-    } ActivityInfo;
-    std::vector<ActivityInfo *> m_activities;
-
-    static ActivityFactory *s_single;
-};
-
 #define REGISTER_ACTIVITY(_class) \
-static Activity * my_create() \
+static T * my_create() \
 { \
     return new _class(); \
 } \
 void realRegister##_class (void) \
 { \
-    ActivityFactory::singleton()->registerActivity(#_class, my_create); \
+    GenericFactory<Activity>::singleton()->register(#_class, my_create); \
 }
 
 #define DO_REGISTER_ACTIVITY(_class) \
@@ -294,7 +220,7 @@ void realRegister##_class (void) \
             return new _class(); \
         } \
         _ActivityFactory_##_class() { \
-            ActivityFactory::singleton()->registerActivity(#_class, create); \
+            GenericFactory<Activity>::singleton()->doRegister(#_class, create); \
         } \
     } _autoRegister_##_class
 

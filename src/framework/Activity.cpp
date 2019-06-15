@@ -1,10 +1,3 @@
-/*! ============================================================================
- * @file Activity.cpp
- * @Synopsis  
- * @author DongKai
- * @version 1.0
- *  Company: Beijing Feynman Software Technology Co., Ltd.
- */
 //1. The .cc .cpp .cxx related header files
 #include "Activity.h"
 
@@ -22,7 +15,7 @@
 #include "ContentResolver.h"
 #include "ActivityStack.h"
 
-ActivityFactory *ActivityFactory::s_single = NULL;
+template<> GenericFactory<Activity> *GenericFactory<Activity>::s_single = NULL;
 
 // public:
 
@@ -58,17 +51,17 @@ int Activity::create()
 // show the window of this activity
 void Activity::show()
 {
-    db_debug("show window[@0x%x] >>\n", m_hwnd);
+    db_debug("show window[@%p] >>\n", m_hwnd);
     ShowWindow(m_hwnd, SW_SHOWNORMAL);
-    ACTIVITYSTACK->dump();
+    ACTIVITYSTACK.dump();
 }
 
 // hide the window of this activity
 void Activity::hide()
 {
-    db_debug("hide window[@0x%x] >>\n", m_hwnd);
+    db_debug("hide window[@%p] >>\n", m_hwnd);
     ShowWindow(m_hwnd, SW_HIDE);
-    ACTIVITYSTACK->dump();
+    ACTIVITYSTACK.dump();
 }
 
 // get snapshot of this activity

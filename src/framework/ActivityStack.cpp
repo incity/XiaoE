@@ -10,18 +10,22 @@
 
 #define SWITCH_EFFECT_DURATION  220
 
-ActivityStack* ActivityStack::s_single = NULL;
-
 using namespace std;
 
+#ifdef USE_ANDROID_UTILS_SINGLETON
+ANDROID_SINGLETON_STATIC_INSTANCE(ActivityStack);
+#else
+ActivityStack* ActivityStack::s_single = NULL;
+
 // get the single instance of ActivityStack
-ActivityStack* ActivityStack::singleton()
+ActivityStack& ActivityStack::singleton()
 {
     if (NULL == s_single) {
         s_single = new ActivityStack();
     }
-    return s_single;
+    return *s_single;
 }
+#endif
 
 // get the top activity in stack
 Activity* ActivityStack::top() const
@@ -77,7 +81,6 @@ bool ActivityStack::pop()
 
     return ret;
 }
-
 
 void ActivityStack::clear()
 {
@@ -138,11 +141,10 @@ void ActivityStack::navigateTo(const char* activityName, Intent* intentPtr)
     }
 }
 
-
 // private:
 Activity* ActivityStack::innerPush(const char* activityName, Intent* intentPtr)
 {
-    Activity* next = ActivityFactory::singleton()->create(activityName);
+    Activity* next = GenericFactory<Activity>::singleton()->create(activityName);
     Activity* prev = top();
 
     //assert(NULL != next);
@@ -246,7 +248,6 @@ int ActivityStack::popTo(Activity* which, Intent* intentPtr)
 
     return count;
 }
-
 
 Activity* ActivityStack::_underTop() const
 {

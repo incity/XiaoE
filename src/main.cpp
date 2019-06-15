@@ -15,8 +15,13 @@
 #include <minigui/window.h>
 #include <minigui/control.h>
 #include <mgeff/mgeff.h>
-#include <mgncs/mgncs.h>
-#include <mgncs4touch/mgncs4touch.h>
+// WARNING:
+// there is a macro conflict between mgncs.h:PRIVATE and 
+// android::Mutex::PRIVATE
+// SO we can not include both files at the same time.
+//#include <mgncs/mgncs.h>
+//#include <mgncs4touch/mgncs4touch.h>
+
 
 //5. Your project's .h files.
 #include "debug.h"
@@ -24,6 +29,13 @@
 #include "Activity.h"
 #include "ActivityStack.h"
 #include "ResourceManager.h"
+
+extern "C" {
+    extern BOOL ncs4TouchInitialize(void);
+    extern BOOL ncsInitialize(void);
+    extern void ncsUninitialize(void);
+    extern void ncs4TouchUninitialize(void);
+}
 
 #undef LOG_TAG
 #define LOG_TAG "Main"
@@ -52,7 +64,7 @@ void finalizeEnvironment()
 static BOOL screenIdleHandler(HWND hwnd, LINT timer_id, DWORD tick_count)
 {
     db_debug("screen idle.\n");
-    Activity* currApp = ACTIVITYSTACK->top();
+    Activity* currApp = ACTIVITYSTACK.top();
 
     if (currApp) {
         HWND hwnd = currApp->hwnd();
@@ -62,8 +74,8 @@ static BOOL screenIdleHandler(HWND hwnd, LINT timer_id, DWORD tick_count)
         if ( ret != 0) {
             // 返回到Home，应用可以通过重写Activity::onHome方法来禁止返回Home
             // onHome() 返回 1表示当前界面禁止(ACTIVITYSTACK->home())返回Home
-            ACTIVITYSTACK->home();
-            ACTIVITYSTACK->push("BlackScreenActivity");
+            ACTIVITYSTACK.home();
+            ACTIVITYSTACK.push("BlackScreenActivity");
         }
     }
     
@@ -80,7 +92,7 @@ static LRESULT DesktopProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
             ResourceManager* rm = ResourceManager::getInstance();
             rm->lazyLoad();
             
-            ACTIVITYSTACK->push("HomeActivity");
+            ACTIVITYSTACK.push("HomeActivity");
         }
         break;
         /*case MSG_PAINT:
@@ -94,7 +106,7 @@ static LRESULT DesktopProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
         }
         return 0;*/
         case MSG_CLOSE:
-            ACTIVITYSTACK->clear();
+            ACTIVITYSTACK.clear();
             DestroyMainWindow(hWnd);
         break;
         default:

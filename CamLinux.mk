@@ -4,15 +4,18 @@ include $(CLEAR_VARS)
 
 LOCAL_LDFLAGS += \
         -L$(TOP)/frameworks/prebuilts \
+        -lgnustl_shared \
         -lfreetype \
         -L$(LOCAL_PATH)/3rd-party/lib \
         -lmgncs4touch -lmgncs -lmgplus -lminigui_ths -lmgeff -lchipmunk
 
-LOCAL_SHARED_LIBRARIES := libstlport  libgabi++ \
+LOCAL_SHARED_LIBRARIES :=   \
                 	libcutils \
                 	libutils \
                                 libbinder \
                                 libstandby \
+                                libserial \
+                                libsqlite++ \
 		libts libpng12 libjpeg 
 
 #strict compile option
@@ -20,8 +23,11 @@ LOCAL_SHARED_LIBRARIES := libstlport  libgabi++ \
 compile_date=$(shell date "+%Y-%m-%d %H:%M:%S")
 #compile_version=$(addprefix $(addsuffix $(compile_date), "), ")
 LOCAL_CFLAGS += -DCOMPILE_VERSION="\"$(USER)@$(TARGET_PRODUCT) $(compile_date)\""
-LOCAL_CFLAGS += -D$(TARGET_PRODUCT) -frtti
-LOCAL_NDK_STL_VARIANT := stlport_static
+LOCAL_CFLAGS += -D$(TARGET_PRODUCT) -frtti -fexceptions
+
+LOCAL_CFLAGS += -DUSE_ANDROID_UTILS_SINGLETON \
+
+LOCAL_NDK_STL_VARIANT := gnustl_shared
 
 SRC_TAG := src
 INC_TAG := include
@@ -37,13 +43,15 @@ LOCAL_SRC_FILES := $(SRC_FILES)
 LOCAL_C_INCLUDES := $(INC_SUB_DIRS) \
         $(TOP)/frameworks/include/binder \
         $(TOP)/frameworks/include/standby \
+        $(TOP)/prebuilts/ndk/current/sources/cxx-stl/gnu-libstdc++/include \
+        $(TOP)/prebuilts/ndk/current/sources/cxx-stl/gnu-libstdc++/libs/armeabi/include \
         $(LOCAL_PATH)/3rd-party/include \
-        abi/cpp/include \
         bionic \
-        external/stlport/stlport
+        external/SQLiteCpp/include \
 
 LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE := XiaoE
+LOCAL_MODULE := $(notdir $(LOCAL_PATH))
+#LOCAL_MODULE_PATH := $(LOCAL_PATH)
 
 include $(BUILD_EXECUTABLE)
 endif
