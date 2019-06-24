@@ -1,35 +1,31 @@
-#include "HomeActivity.h"
+#include "DialpadStatusActivity.h"
 
-AUTO_REGISTER_ACTIVITY(HomeActivity);
+AUTO_REGISTER_ACTIVITY(DialpadStatusActivity);
 
-#define ACTIVITY_NAME "HomeActivity"
+#define ACTIVITY_NAME "DialpadStatusActivity"
 #undef LOG_TAG
 #define LOG_TAG ACTIVITY_NAME
-
-enum {
-    ID_SWIPER = StatusActivity::ID_END,
-    ID_BUTTON_HOME,
-};
-
+    
 // +++++++++++++++++++++++++++++++++++++++++++++
 // |   0. static members                       |
 // +++++++++++++++++++++++++++++++++++++++++++++
-
 // ++++++++++++++++++++++++
 // |  control properties  |
 // ++++++++++++++++++++++++
-static NCS_PROP_ENTRY _swiper_props[] = {
-    {NCSP_ANMT_DIR, (DWORD)"./res/images/home/ad"},
-    {NCSP_ANMT_INTERVAL, (DWORD)500},
-    //{NCSP_SWIPER_PAGINATION_BULLET_COLOR, (DWORD)0xFFFFFFFF},
-    //{NCSP_SWIPER_PAGINATION_BULLET_HILIGHT_COLOR, (DWORD)0xFFF48924},
-    //{NCSP_SWIPER_PAGINATION_BGCOLOR, (DWORD)0x40C9C2BD},
-    //{NCSP_SWIPER_PAGINATION_BULLET_MARGIN, (DWORD)5},
-    {0, 0},
-};
-
 static NCS_PROP_ENTRY _home_button_props[] = {
     {0, 0},
+};
+    
+static const char *dialpad_key_numbers[] = {
+    "1", "2", "3", "[./res/images/unlocking/delete_key.png]",
+    "4", "5", "6", "0",
+    "7", "8", "9", "#"
+};
+
+static NCS_PROP_ENTRY dialpad_props[] = {
+	{NCSP_DIALPAD_KEYPAD_NUMBER_ARRAY, (DWORD)dialpad_key_numbers},
+	{NCSP_DIALPAD_KEYPAD_LETTERS_FONTNAME, (DWORD)"*-simfang-rrT*nn-*-16-UTF-8"},
+	{0, 0}
 };
 
 // ++++++++++++++++++++++++
@@ -42,9 +38,9 @@ static NCS_RDR_INFO _home_button_render[] = {
 // ++++++++++++++++++++++++
 // |  control handlers    |
 // ++++++++++++++++++++++++
-static BOOL _home_button_onCreate(mButton* self, DWORD dwAddData )
+static BOOL _home_button_onCreate(mButton* self, DWORD add_data )
 {
-    DWORD key = (DWORD)Str2Key("images/home/home_button.png");
+    DWORD key = (DWORD)Str2Key("images/unlocking/home_button.png");
 
     ncsSetElement(self, NCS_IMAGE_BUTTON, key);
 
@@ -53,32 +49,31 @@ static BOOL _home_button_onCreate(mButton* self, DWORD dwAddData )
 
 static void _home_button_notify(mWidget *self, int id, int nc, DWORD add_data)
 {
-    ACTIVITYSTACK.navigateTo("AccessModeActivity");
+    ACTIVITYSTACK.back();
+}
+
+static void _dialpad_notify(mWidget *self, int id, int nc, DWORD add_data)
+{
 }
 
 static NCS_EVENT_HANDLER _home_button_handlers [] = {
     {MSG_CREATE, NCS_EVENT_HANDLER_CAST(_home_button_onCreate)},
     NCS_MAP_NOTIFY(NCSN_WIDGET_CLICKED, _home_button_notify),
+	{0, NULL}	
+};
+
+static NCS_EVENT_HANDLER dialpad_handlers[] = {
+    NCS_MAP_NOTIFY(NCSN_DIALPAD_KEYPAD_CLICKED, _dialpad_notify),
     {0, NULL}
 };
 
 // ++++++++++++++++++++++++
 // |  controls            |
 // ++++++++++++++++++++++++
-NCS_WND_TEMPLATE HomeActivity::control_templates[] = {
-    {
-        NCSCTRL_SWIPER,
-        ID_SWIPER,
-        0, 0, 800, 420,
-        WS_VISIBLE | NCSS_ANMT_AUTOPLAY | NCSS_ANMT_AUTOLOOP,
-        WS_EX_NONE,
-        NULL, /* caption */
-        _swiper_props, /* props */
-        CTRL_TEMPL_ZERO_AFTER_PROPS
-    },
+NCS_WND_TEMPLATE DialpadStatusActivity::control_templates[] = {
     {
         NCSCTRL_BUTTON,
-        ID_BUTTON_HOME,
+        ID_BUTTON_MAIN,
         684, 369, 106, 106,
         WS_VISIBLE | NCSS_BUTTON_IMAGE,
         WS_EX_TRANSPARENT,
@@ -88,7 +83,22 @@ NCS_WND_TEMPLATE HomeActivity::control_templates[] = {
         _home_button_handlers,
         CTRL_TEMPL_ZERO_AFTER_HANDLERS
     },
+    {
+        NCSCTRL_DIALPAD, 
+        ID_DIALPAD,
+        210, 135, 380, 280,
+        WS_VISIBLE,
+        WS_EX_TRANSPARENT,
+        NULL,
+        dialpad_props, //props,
+        NULL, //rdr_info
+        dialpad_handlers, //handlers,
+        NULL, 0, 0, 0,
+        "*-simfang-rrT*nn-*-42-UTF-8",
+        CTRL_TEMPL_ZERO_AFTER_FONTNAME
+    }
 };
+
 
 // +++++++++++++++++++++++++++++++++++++++++++++
 // |   1. public members                       |
@@ -97,16 +107,15 @@ NCS_WND_TEMPLATE HomeActivity::control_templates[] = {
 // +++++++++++++++++++++++++++
 // |   1.6. constructors     |
 // +++++++++++++++++++++++++++
-HomeActivity::HomeActivity()
+DialpadStatusActivity::DialpadStatusActivity()
 {
-    m_style = STYLE_PUSH;
     addControl(control_templates, ARRAY_LEN(control_templates));
 }
 
 // +++++++++++++++++++++++++++
 // |   1.7. destructors      |
 // +++++++++++++++++++++++++++
-HomeActivity::~HomeActivity()
+DialpadStatusActivity::~DialpadStatusActivity()
 {
 }
 
@@ -117,37 +126,16 @@ HomeActivity::~HomeActivity()
 // +++++++++++++++++++++++++++
 // |   2.8. member functions |
 // +++++++++++++++++++++++++++
-int HomeActivity::onPause()
-{
-    StatusActivity::onPause();
-     mSwiper* swiper = (mSwiper *)ncsGetChildObj(hwnd(), ID_SWIPER);
-    _c(swiper)->pauseResume(swiper);
-
-    return 0;
-}
-
-int HomeActivity::onResume()
-{
-    StatusActivity::onResume();
-    mSwiper* swiper = (mSwiper *)ncsGetChildObj(hwnd(), ID_SWIPER);
-    _c(swiper)->pauseResume(swiper);
-
-    return 0;
-}
-
-BOOL HomeActivity::onCreate(mMainWnd* self, DWORD dwAddData )
+BOOL DialpadStatusActivity::onCreate(mMainWnd* self, DWORD dwAddData )
 {
     db_debug(" >> \n");
     StatusActivity::onCreate(self, dwAddData);
-
+    
     return TRUE;
 }
 
-// +++++++++++++++++++++++++++++++++++++++++++++
-// |   3. private members                      |
-// +++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++
+// |   2.9. member variables |
+// +++++++++++++++++++++++++++
 
-// +++++++++++++++++++++++++++
-// |   3.9. member variables |
-// +++++++++++++++++++++++++++
 

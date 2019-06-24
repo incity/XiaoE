@@ -1,10 +1,10 @@
-#ifndef UNLOCKING_ACTIVITY_HH
-#define UNLOCKING_ACTIVITY_HH
+#ifndef ACCESS_PWD_STEP1_ACTIVITY_HH
+#define ACCESS_PWD_STEP1_ACTIVITY_HH
 
 #include "macros.h"
-#include "XiaoEActivity.h"
+#include "DialpadStatusActivity.h"
 
-class UnlockingActivity : public XiaoEActivity
+class AccessPwdStep1Activity : public DialpadStatusActivity
 {
 // 1. public members
 public:
@@ -14,9 +14,9 @@ public:
     // 1.4. nested classes
     // 1.5. consts
     // 1.6. constructors
-    UnlockingActivity();
+    AccessPwdStep1Activity();
     // 1.7. destructors
-    ~UnlockingActivity();
+    ~AccessPwdStep1Activity();
     // 1.8. member functions
     // 1.9. member variables
 
@@ -42,16 +42,9 @@ private:
     // 3.7. destructors
     // 3.8. member functions
     BOOL onCreate(mMainWnd* self, DWORD dwAddData);
-    void onPaint(mMainWnd *self, HDC hdc, const CLIPRGN* inv);
-    BOOL onEraseBackground(mMainWnd *self, HDC hdc, const PRECT clip);
-    BOOL onScreensave(mMainWnd* self, int message, WPARAM wParam, LPARAM lParam);
 
-    static NCS_MNWND_TEMPLATE window_template;
     static NCS_WND_TEMPLATE control_templates[];
-    static BITMAP* background_image;
-    DISALLOW_COPY_AND_ASSIGN(UnlockingActivity);
+    DISALLOW_COPY_AND_ASSIGN(AccessPwdStep1Activity);
     // 3.9. member variables
-
 };
 #endif
-

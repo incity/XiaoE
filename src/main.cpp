@@ -22,13 +22,16 @@
 //#include <mgncs/mgncs.h>
 //#include <mgncs4touch/mgncs4touch.h>
 
-
 //5. Your project's .h files.
 #include "debug.h"
 #include "version.h"
+#include "tinyplay.h"
 #include "Activity.h"
 #include "ActivityStack.h"
 #include "ResourceManager.h"
+
+#include "SoftApEnabler.h"
+#include "HttpServer.h"
 
 extern "C" {
     extern BOOL ncs4TouchInitialize(void);
@@ -51,6 +54,14 @@ BOOL initializeEnvironment(void)
     Init32MemDC();
     ncsInitialize();
     ncs4TouchInitialize();
+    tinyplay_init();
+
+    static SoftApEnabler ap;
+    ap.setEnable(1);
+    
+    static HttpServer http_server;
+    http_server.autostart(8080);
+    
     return TRUE;
 }
 

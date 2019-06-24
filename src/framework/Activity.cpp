@@ -16,17 +16,30 @@
 #include "ActivityStack.h"
 
 template<> GenericFactory<Activity> *GenericFactory<Activity>::s_single = NULL;
+#define ACTIVITY_COUNTER
+#ifdef ACTIVITY_COUNTER
+static int total_activities = 0;
+#endif
 
 // public:
 
 // constructor & destructor
 Activity::Activity() :
-    m_pushIndex(0), m_hwnd(HWND_INVALID), m_style(Activity::STYLE_ALPHA), m_needSwitchEffect(true)
+    m_pushIndex(0), m_hwnd(HWND_INVALID), m_style(Activity::STYLE_ALPHA)//, m_needSwitchEffect(true)
 {
+#ifdef ACTIVITY_COUNTER
+    total_activities++;
+    db_info("total activities = %d\n", total_activities);
+#endif
 }
 
 Activity::~Activity()
 {
+    printf("%s %d >>\n", __func__, __LINE__);
+#ifdef ACTIVITY_COUNTER
+    total_activities--;
+    db_info("total activities = %d\n", total_activities);
+#endif
 }
 
 // create this activity, including creating window, setting additional data, etc.
@@ -53,7 +66,6 @@ void Activity::show()
 {
     db_debug("show window[@%p] >>\n", m_hwnd);
     ShowWindow(m_hwnd, SW_SHOWNORMAL);
-    ACTIVITYSTACK.dump();
 }
 
 // hide the window of this activity
@@ -61,7 +73,6 @@ void Activity::hide()
 {
     db_debug("hide window[@%p] >>\n", m_hwnd);
     ShowWindow(m_hwnd, SW_HIDE);
-    ACTIVITYSTACK.dump();
 }
 
 // get snapshot of this activity

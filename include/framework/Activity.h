@@ -54,11 +54,12 @@ public:
     int style() const { return m_style; }
 
     // determine whether I need the switch effect provide by the framework
-    bool needSwitchEffect() const { return m_needSwitchEffect; }
+    //bool needSwitchEffect() const { return m_needSwitchEffect; }
 
     enum STYLE
     {
-        STYLE_PUSH = 0x01,
+        STYLE_NONE,
+        STYLE_PUSH,
         STYLE_ZOOM,
         STYLE_ALPHA,
     };
@@ -102,7 +103,7 @@ protected:
     int m_style;
 
     // indicate if this activity need a switch effect or not, default is TRUE
-    bool m_needSwitchEffect;
+    //bool m_needSwitchEffect;
 
     friend class ActivityStack;
 };
@@ -112,6 +113,7 @@ class Intent
     public:
         enum ACTION {
             ACTION_MAIN,
+            ACTION_VIEW,
         };
         static Intent* newIntent(int action = ACTION_MAIN, std::string uri="")
         {

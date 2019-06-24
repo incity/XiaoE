@@ -1,22 +1,28 @@
-#ifndef HOME_ACTIVITY_HH
-#define HOME_ACTIVITY_HH
+#ifndef STATUS_ACTIVITY_HH
+#define STATUS_ACTIVITY_HH
 
 #include "macros.h"
-#include "StatusActivity.h"
+#include "XiaoEActivity.h"
 
-class HomeActivity : public StatusActivity
+class StatusActivity : public XiaoEActivity
 {
 // 1. public members
 public:
     // 1.1. typedefs
     // 1.2. nested enums
+    enum {
+        ID_LEDLABEL = 100,
+        ID_MARQUEE,
+        ID_TIMER,
+        ID_END
+    };
     // 1.3. nested structs
     // 1.4. nested classes
     // 1.5. consts
     // 1.6. constructors
-    HomeActivity();
+    StatusActivity();
     // 1.7. destructors
-    ~HomeActivity();
+    ~StatusActivity();
     // 1.8. member functions
     // 1.9. member variables
 
@@ -31,7 +37,11 @@ protected:
     // 2.7. destructors
     // 2.8. member functions
     BOOL onCreate(mMainWnd* self, DWORD dwAddData);
+    BOOL onEraseBackground(mMainWnd *self, HDC hdc, const PRECT clip);
+    BOOL onScreensave(mMainWnd* self, int message, WPARAM wParam, LPARAM lParam);
 
+    int onPause();
+    int onResume();
     // 2.9. member variables
 // 3. private members	
 private:
@@ -43,11 +53,11 @@ private:
     // 3.6. constructors
     // 3.7. destructors
     // 3.8. member functions
-    int onPause();
-    int onResume();
     // 3.9. member variables
+    static NCS_MNWND_TEMPLATE window_template;
     static NCS_WND_TEMPLATE control_templates[];
-    DISALLOW_COPY_AND_ASSIGN(HomeActivity);
+    static const BITMAP* background_image;
+    DISALLOW_COPY_AND_ASSIGN(StatusActivity);
 };
 #endif
 

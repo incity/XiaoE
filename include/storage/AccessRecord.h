@@ -11,11 +11,6 @@
 #include <string>
 
 //4. Other libraries' .h files.
-#include <utils/WorkQueue.h>
-#ifdef USE_ANDROID_UTILS_SINGLETON
-    #include <utils/Singleton.h>
-    using namespace android;
-#endif
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <SQLiteCpp/VariadicBind.h>
 
@@ -27,7 +22,6 @@
 
 //5. Your project's .h files.
 #include "debug.h"
-#include "GenericValidator.h"
 
 using namespace android;
 using namespace rapidjson;
@@ -52,6 +46,27 @@ struct AccessRecord
         JsonConverter(AccessRecord& record)
         {
             Writer<StringBuffer> writer(mStringBuf);
+            doConvert(writer, record);
+        }
+
+        JsonConverter(AccessRecord records[], size_t count)
+        {
+            Writer<StringBuffer> writer(mStringBuf);
+
+            size_t i;
+            for (i = 0; i < count; i++) {    
+                doConvert(writer, records[i]);
+            }
+        }
+
+        const char* getString()
+        {
+            return mStringBuf.GetString();
+        }
+    private:
+    
+        void doConvert(Writer<StringBuffer>& writer, AccessRecord& record)
+        {
             writer.StartObject();
             writer.Key("id");
             writer.Int(record.id);
@@ -66,34 +81,6 @@ struct AccessRecord
             writer.Uint(record.access_time);
             writer.EndObject();
         }
-
-        JsonConverter(AccessRecord record[], size_t count)
-        {
-            Writer<StringBuffer> writer(mStringBuf);
-
-            size_t i;
-            for (i = 0; i < count; i++) {    
-                writer.StartObject();
-                writer.Key("id");
-                writer.Int(record[i].id);
-                
-                writer.Key("access_mode");
-                writer.Int(record[i].access_mode);
-                
-                writer.Key("access_code");
-                writer.String(record[i].access_code.c_str());
-                
-                writer.Key("access_time");
-                writer.Uint(record[i].access_time);
-                writer.EndObject();
-            }
-        }
-
-        const char* getString()
-        {
-            return mStringBuf.GetString();
-        }
-    private:
         StringBuffer mStringBuf;
     };
 
@@ -116,7 +103,7 @@ struct AccessRecord
             while (query.executeStep()) {
                 record.id          = query.getColumn("id");
                 record.access_mode = query.getColumn("access_mode");
-                record.access_code = query.getColumn("access_code").getText();;
+                record.access_code = query.getColumn("access_code").getText();
                 record.access_time = query.getColumn("access_time");
                 
                 return 1;
@@ -136,7 +123,7 @@ struct AccessRecord
             for (i = 0; query.executeStep(); i++) {
                 record[i].id          = query.getColumn("id");
                 record[i].access_mode = query.getColumn("access_mode");
-                record[i].access_code = query.getColumn("access_code").getText();;
+                record[i].access_code = query.getColumn("access_code").getText();
                 record[i].access_time = query.getColumn("access_time");
             }
 

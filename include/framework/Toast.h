@@ -1,10 +1,10 @@
-#ifndef BULLETIN_ACTIVITY_HH
-#define BULLETIN_ACTIVITY_HH
+#ifndef TOAST_H
+#define TOAST_H
 
 #include "macros.h"
 #include "XiaoEActivity.h"
 
-class BulletinActivity : public XiaoEActivity
+class Toast : public XiaoEActivity
 {
 // 1. public members
 public:
@@ -14,10 +14,19 @@ public:
     // 1.4. nested classes
     // 1.5. consts
     // 1.6. constructors
-    BulletinActivity();
+    Toast(const char* caption = NULL);
     // 1.7. destructors
-    ~BulletinActivity();
+    ~Toast();
     // 1.8. member functions
+    void autosize();
+    static Toast* makeText(const char* caption)
+    {
+        Toast* toast = new Toast(caption);
+        toast->create();
+        SetWindowCaption(toast->hwnd(), caption);
+        toast->autosize();
+        return toast;
+    }
     // 1.9. member variables
 
 // 2. protected members 
@@ -43,15 +52,13 @@ private:
     // 3.8. member functions
     BOOL onCreate(mMainWnd* self, DWORD dwAddData);
     void onPaint(mMainWnd *self, HDC hdc, const CLIPRGN* inv);
-    BOOL onEraseBackground(mMainWnd *self, HDC hdc, const PRECT clip);
-    BOOL onScreensave(mMainWnd* self, int message, WPARAM wParam, LPARAM lParam);
-
+    //BOOL onIntent(mMainWnd* self, int message,
+      //                    WPARAM wParam, LPARAM lParam);
+    
     static NCS_MNWND_TEMPLATE window_template;
     static NCS_WND_TEMPLATE control_templates[];
-    static const BITMAP* background_image;
-    DISALLOW_COPY_AND_ASSIGN(BulletinActivity);
+    DISALLOW_COPY_AND_ASSIGN(Toast);
     // 3.9. member variables
-
 };
-#endif
+#endif // << end #ifndef TOAST_H >>
 

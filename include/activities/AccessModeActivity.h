@@ -1,10 +1,10 @@
-#ifndef HOME_ACTIVITY_HH
-#define HOME_ACTIVITY_HH
+#ifndef ACCESS_MODE_ACTIVITY_HH
+#define ACCESS_MODE_ACTIVITY_HH
 
 #include "macros.h"
 #include "StatusActivity.h"
 
-class HomeActivity : public StatusActivity
+class AccessModeActivity : public StatusActivity
 {
 // 1. public members
 public:
@@ -14,13 +14,13 @@ public:
     // 1.4. nested classes
     // 1.5. consts
     // 1.6. constructors
-    HomeActivity();
+    AccessModeActivity();
     // 1.7. destructors
-    ~HomeActivity();
+    ~AccessModeActivity();
     // 1.8. member functions
     // 1.9. member variables
 
-// 2. protected members	
+// 2. protected members 
 protected:
     // 2.1. typedefs
     // 2.2. nested enums
@@ -30,10 +30,8 @@ protected:
     // 2.6. constructors
     // 2.7. destructors
     // 2.8. member functions
-    BOOL onCreate(mMainWnd* self, DWORD dwAddData);
-
     // 2.9. member variables
-// 3. private members	
+// 3. private members   
 private:
     // 3.1. typedefs
     // 3.2. nested enums
@@ -43,11 +41,9 @@ private:
     // 3.6. constructors
     // 3.7. destructors
     // 3.8. member functions
-    int onPause();
-    int onResume();
     // 3.9. member variables
     static NCS_WND_TEMPLATE control_templates[];
-    DISALLOW_COPY_AND_ASSIGN(HomeActivity);
+    DISALLOW_COPY_AND_ASSIGN(AccessModeActivity);
 };
 #endif
 

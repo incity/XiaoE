@@ -27,6 +27,7 @@
 //5. Your project's .h files.
 #include "macros.h"
 #include "AccessRecord.h"
+#include "Resident.h"
 
 #define ACCESS_CONTROL_SYSTEM_DB_PATH "./access_control_system.db"
 
@@ -49,6 +50,8 @@ public:
     void store(AccessRecord &record);
     void remove(AccessRecord &record);
     int load(AccessRecord &record);
+    int load(Resident &resident, const char* tel);
+    
 #ifndef USE_ANDROID_UTILS_SINGLETON
     // get the single instance of StorageManager
     static StorageManager& singleton();

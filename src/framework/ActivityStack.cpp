@@ -1,11 +1,3 @@
-/*! ============================================================================
- * @file ActivityStack.cpp
- * @Synopsis  
- * @author DongKai
- * @version 1.0
- *  Company: Beijing Feynman Software Technology Co., Ltd.
- */
-
 #include "ActivityStack.h"
 
 #define SWITCH_EFFECT_DURATION  220
@@ -63,7 +55,7 @@ bool ActivityStack::push(const char* activityName, Intent* intentPtr)
         if (ret == FALSE)
             m_status = temp_status;
     }
-
+    dump();
     return ret;
 }
 
@@ -78,7 +70,7 @@ bool ActivityStack::pop()
         ret = innerPop();
         m_status = READY;
     }
-
+    dump();
     return ret;
 }
 
@@ -172,9 +164,9 @@ Activity* ActivityStack::innerPush(const char* activityName, Intent* intentPtr)
     // show it up
     next->show();
 
-    if (prev) {
-        prev->hide();
-    }
+    //if (prev) {
+    //    prev->hide();
+    //}
 
     return next;
 }
@@ -276,7 +268,11 @@ void ActivityStack::_doSwitchEffect(Activity* prev, Activity* next, BOOL switchT
     if (prev == NULL || next == NULL)
         return;
 
-    if (! prev->needSwitchEffect() || ! next->needSwitchEffect())
+    //if (! prev->needSwitchEffect() || ! next->needSwitchEffect())
+        //return;
+
+    if (prev->style() == Activity::STYLE_NONE
+        || next->style() ==  Activity::STYLE_NONE)
         return;
 
     if (prev->style() == Activity::STYLE_PUSH && next->style() == Activity::STYLE_PUSH) {

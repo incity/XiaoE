@@ -20,7 +20,9 @@ namespace sc = boost::statechart;
 #endif
 
 //4. Other libraries' .h files.
+#include <CedarMediaPlayer.h>
 #include <utils/WorkQueue.h>
+
 #ifdef USE_ANDROID_UTILS_SINGLETON
     #include <utils/Singleton.h>
     using namespace android;
@@ -35,6 +37,8 @@ namespace sc = boost::statechart;
 //5. Your project's .h files.
 #include "common.h"
 #include "debug.h"
+#include "tinyplay.h"
+#include "SoundPlayer.h"
 #include "GenericValidator.h"
 #include "AccessRecord.h"
 #include "StorageManager.h"
@@ -83,6 +87,9 @@ public:
                 db_msg("<< Validate OK >>\n");
                 sleep(3);
                 db_msg("<< Open Door >>\n");
+                tinyplay_SetPlayFileName("/system/res/others/opendoor.wav");
+                tinyplay_RequestPlay(1);
+                //SOUNDPLAYER.play(SoundPlayer::SOUND_KEYTONE);
                 
                 time_t now;
                 time(&now);
@@ -97,6 +104,7 @@ public:
                 printf("Record: %s\n", jc.getString());
             }
 
+            db_error("vadilate failed(%d)\n", mValidator->why());
             if(onValidated) {
                 if(hwnd != HWND_NULL)
                     XiaoEActivity::runOnUiThread(hwnd, 
@@ -197,7 +205,7 @@ private:
     WorkQueue mWorkQ;    
 #ifndef USE_ANDROID_UTILS_SINGLETON
     // store the single instance of ActivityStack
-    static ActivityStack* s_single;
+    static AccessController* s_single;
 #endif
 #ifdef USE_ANDROID_UTILS_SINGLETON
     friend class Singleton<AccessController>;

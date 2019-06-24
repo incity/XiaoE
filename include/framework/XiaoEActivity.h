@@ -16,24 +16,32 @@
 #define CTRL_TEMPL_ZERO_AFTER_HANDLERS REPEAT_9(0)
 #define CTRL_TEMPL_ZERO_AFTER_FONTNAME REPEAT_4(0)
 
-#define XIAOE_WINDOW_TEMPLATE(caption, ctrls)      \
-{                                                  \
-        NCSCTRL_DIALOGBOX,                         \
-        1,                                         \
-        0, 0, 800, 480,                            \
-        WS_NONE,                                   \
-        WS_EX_AUTOSECONDARYDC,                     \
-        (caption), /* caption */                   \
-        NULL,                                      \
-        NULL,                                      \
-        XiaoEActivity::_message_handlers,          \
-        (ctrls),                                   \
-        ARRAY_LEN((ctrls)),                        \
-        0,    /* user data */                      \
-        0,    /* back color */                     \
-        NULL, /* font name */                      \
-        0, 0, NULL, 0                              \
+#define XIAOE_WINDOW_TEMPLATE(                            \
+              x, y, w, h, style, exstyle, caption, ctrls) \
+{                                                         \
+        NCSCTRL_DIALOGBOX,                                \
+        1,                                                \
+        x, y, w, h,                                       \
+        style,                                            \
+        exstyle,                                          \
+        (caption), /* caption */                          \
+        NULL,                                             \
+        NULL,                                             \
+        XiaoEActivity::_message_handlers,                 \
+        (ctrls),                                          \
+        ARRAY_LEN((ctrls)),                               \
+        0,    /* user data */                             \
+        0,    /* back color */                            \
+        NULL, /* font name */                             \
+        0, 0, NULL, 0                                     \
 } 
+
+#define XIAOE_WINDOW_FULLSCREEN_TEMPLATE(caption, ctrls)  \
+            XIAOE_WINDOW_TEMPLATE(0, 0, 800, 480,         \
+                                  WS_NONE,                \
+                                  WS_EX_AUTOSECONDARYDC,  \
+                                  caption,                \
+                                  ctrls)
 /** 
  * @synopsis XiaoEActivity
  */
@@ -43,6 +51,7 @@ class XiaoEActivity : public NCSActivity
 public:
     // 1.1. typedefs
     typedef void (*Handler)(mMainWnd*, DWORD);
+    typedef std::vector<NCS_WND_TEMPLATE*> ControlSet;
     // 1.2. enums
     enum MESSAGE
     {
@@ -55,17 +64,11 @@ public:
     virtual ~XiaoEActivity();
     
     // 1.6. member functions
+    void addControl(NCS_WND_TEMPLATE* ctrl, int count = 1);
+    
     static bool runOnUiThread(HWND hWnd,
                                      Handler handler,
-                                     DWORD param)
-    {
-        // TODO: check the if clause
-        //if(hWnd && ACTIVITYSTACK.top()->hwnd() == hWnd)
-            return PostMessage(hWnd, MSG_CALLBACK, 
-                               (WPARAM)handler, (LPARAM)param) == 0;
-
-        //return false;
-    }
+                                     DWORD param);
     // 1.7. member variables
 
 // 2. protected members
@@ -84,6 +87,7 @@ protected:
     virtual void onPaint(mMainWnd *self, HDC hdc, const CLIPRGN* inv){}
     virtual BOOL onEraseBackground(mMainWnd *self, HDC hdc, const PRECT clip){return 0;}
     virtual BOOL onScreensave(mMainWnd* self, int message, WPARAM wParam, LPARAM lParam){return 0;}
+    virtual BOOL onIntent(mMainWnd* self, int message, WPARAM wParam, LPARAM lParam){return 0;}
     
     // 2.7. member variables
     static NCS_EVENT_HANDLER _message_handlers[];
@@ -96,13 +100,17 @@ private:
     // 3.4. constructors
     // 3.5. destructors
     // 3.6. member functions
+    BOOL createControls(mMainWnd* self);
     static BOOL _onCreate(mMainWnd* self, DWORD dwAddData);
     static void _onPaint(mMainWnd *self, HDC hdc, const CLIPRGN* inv);
     static BOOL _onEraseBackground(mMainWnd *self, HDC hdc, const PRECT clip);
     static BOOL _onScreensave(mMainWnd* self, int message, WPARAM wParam, LPARAM lParam);
     static BOOL _onCallback(mMainWnd* self, int message, WPARAM wParam, LPARAM lParam);
+    static BOOL _onIntent(mMainWnd* self, int message, WPARAM wParam, LPARAM lParam);
     
     // 3.7. member variables
+    // store all controls
+    ControlSet _mControls;
 };
 
 #endif   /* ----- #ifndef XIAOEACTIVITY_INC  ----- */

@@ -53,7 +53,7 @@ private:
     // 3.7. destructors
     // 3.8. member functions
     // 3.9. member variables
-    char mPassword[9];
+    char mPassword[64];
 };
 
 #endif

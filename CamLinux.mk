@@ -10,13 +10,18 @@ LOCAL_LDFLAGS += \
         -lmgncs4touch -lmgncs -lmgplus -lminigui_ths -lmgeff -lchipmunk
 
 LOCAL_SHARED_LIBRARIES :=   \
-                	libcutils \
-                	libutils \
-                                libbinder \
-                                libstandby \
-                                libserial \
-                                libsqlite++ \
-		libts libpng12 libjpeg 
+        libhardware \
+        libhardware_legacy \
+        libcutils \
+        libutils \
+        libbinder \
+        libstandby \
+        libserial \
+        libsqlite++ \
+        libmedia \
+        libtinyalsa \
+        libts libpng12 libjpeg  \
+        libRpc libSocket libHttpServer
 
 #strict compile option
 #LOCAL_CFLAGS += -Werror  -Wall -Wno-unused-parameter -Wno-reorder
@@ -32,19 +37,24 @@ LOCAL_NDK_STL_VARIANT := gnustl_shared
 SRC_TAG := src
 INC_TAG := include
 
-define list_sub_dirs
+define all-dirs-under
 $(shell cd $(LOCAL_PATH);find $(1) -maxdepth 0 -type d)
 endef
 
-INC_SUB_DIRS := $(addprefix $(LOCAL_PATH)/,$(call list_sub_dirs, $(INC_TAG)/*))
+INC_SUB_DIRS := $(addprefix $(LOCAL_PATH)/,$(call all-dirs-under, $(INC_TAG)/*))
 
 SRC_FILES := $(call all-cpp-files-under, $(SRC_TAG))
 LOCAL_SRC_FILES := $(SRC_FILES)
 LOCAL_C_INCLUDES := $(INC_SUB_DIRS) \
         $(TOP)/frameworks/include/binder \
         $(TOP)/frameworks/include/standby \
+        $(TOP)/frameworks/include/include_media/media \
         $(TOP)/prebuilts/ndk/current/sources/cxx-stl/gnu-libstdc++/include \
         $(TOP)/prebuilts/ndk/current/sources/cxx-stl/gnu-libstdc++/libs/armeabi/include \
+        $(TOP)/external/tinyalsa/include \
+        $(TOP)/external/libSocket \
+        $(TOP)/external/libRpc \
+        $(TOP)/external/libHttpServer \
         $(LOCAL_PATH)/3rd-party/include \
         bionic \
         external/SQLiteCpp/include \

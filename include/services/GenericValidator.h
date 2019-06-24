@@ -45,13 +45,15 @@ public:
     {
         return 0;
     }
-    virtual inline int why()
+    inline int why()
     {
-        return 0;
+        return this->result;
     }
     virtual bool validate() = 0;
     virtual const char* dumpcode() const = 0;
     virtual int modeid() const = 0;
+protected:
+    int result;
 };
 
 typedef GenericFactory<GenericValidator> ValidatorFactory;

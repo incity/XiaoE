@@ -23,11 +23,10 @@ BulletinActivity::BulletinActivity()
                  : XiaoEActivity(&BulletinActivity::window_template)
 {
     m_style = STYLE_ZOOM;
-    background_image = (BITMAP*)calloc(1, sizeof(BITMAP));
-    assert(background_image);
-    
-    LoadBitmap(HDC_SCREEN, background_image, 
-        "./res/images/unlocking/background.png");
+    background_image = RetrieveRes("images/background.jpg");
+    if(!background_image) {
+        db_error("background image not found!\n");
+    }
 }
 
 // +++++++++++++++++++++++++++
@@ -35,8 +34,6 @@ BulletinActivity::BulletinActivity()
 // +++++++++++++++++++++++++++
 BulletinActivity::~BulletinActivity()
 {
-    UnloadBitmap(background_image);
-    free(background_image);
 }
 
 // +++++++++++++++++++++++++++++++++++++++++++++
@@ -99,6 +96,20 @@ BOOL BulletinActivity::onCreate(mMainWnd* self, DWORD dwAddData )
 
 void BulletinActivity::onPaint(mMainWnd *self, HDC hdc, const CLIPRGN* inv)
 {
+    RECT rect;
+    rect.left = rect.top = 30;
+    rect.right = 800-30;
+    rect.bottom = 360+30;
+    ncsCommRDRFillHalfRoundRect(hdc, &rect, 8, 8, 0xFFFFFFFF, NCS_ROUND_CORNER_ALL | NCS_BORDER_ALL);
+
+    // Draw a Line
+    // TODO:
+    // MAYBE use a DrawLine function???
+    rect.left = 100;
+    rect.top = 92;
+    rect.right = 600+100;
+    rect.bottom = 94;
+    ncsCommRDRFillHalfRoundRect(hdc, &rect, 0, 0, 0xFFFE7D02, 0);
 }
 
 BOOL BulletinActivity::onScreensave(mMainWnd* self, int message, WPARAM wParam, LPARAM lParam)
@@ -135,7 +146,7 @@ static void home_button_notify(mWidget *self, int id, int nc, DWORD add_data)
 // +++++++++++++++++++++++++++
 // |   3.9. member variables |
 // +++++++++++++++++++++++++++
-BITMAP* BulletinActivity::background_image = NULL;
+const BITMAP* BulletinActivity::background_image = NULL;
 
 NCS_WND_TEMPLATE BulletinActivity::control_templates[] = {
     {
@@ -153,7 +164,7 @@ NCS_WND_TEMPLATE BulletinActivity::control_templates[] = {
     {
         NCSCTRL_TEXTVIEW, 
         ID_HTEXTVIEW,
-        100, 40, 600, 40,
+        100, 40, 600, 50,
         WS_VISIBLE,
         WS_EX_TRANSPARENT,
         "踩着自己的节奏 中国扩大金融开放",
@@ -161,7 +172,7 @@ NCS_WND_TEMPLATE BulletinActivity::control_templates[] = {
         NULL, //rdr_info
         textview_handlers, //handlers,
         NULL, 0, 0, 0,
-        "*-simfang-rrT*nn-*-32-UTF-8",
+        "*-simfang-rrT*nn-*-35-UTF-8",
         CTRL_TEMPL_ZERO_AFTER_FONTNAME
     },
     {
@@ -190,5 +201,5 @@ NCS_WND_TEMPLATE BulletinActivity::control_templates[] = {
 };
 
 NCS_MNWND_TEMPLATE BulletinActivity::window_template = 
-    XIAOE_WINDOW_TEMPLATE(ACTIVITY_NAME, BulletinActivity::control_templates);
+    XIAOE_WINDOW_FULLSCREEN_TEMPLATE(ACTIVITY_NAME, BulletinActivity::control_templates);
 

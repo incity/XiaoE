@@ -14,11 +14,13 @@
  *                                  type 是所选用的设备字体类型，如果不想指定，则用 * 代替。
  *                                  facename 指字体样式名，比如 Courier、 Times 等等。
  *                                  style 是由六个字母组成的字符串，用来指定逻辑字体风格，比如是否加粗、是否斜体、是否对字体做镜像处理、是否自动放大、是否含有下划线或者删除线等等。
- *                                   width 指定要创建的逻辑字体的宽度。如果不想指定，则用 * 代替。
- *                                   height 指定要创建的逻辑字体的高度。
- *                                   charset 指定要创建的逻辑字体的字符集。
+ *                                  width 指定要创建的逻辑字体的宽度。如果不想指定，则用 * 代替。
+ *                                  height 指定要创建的逻辑字体的高度。
+ *                                  charset 指定要创建的逻辑字体的字符集。
  ****************************************************************************/
 { "images/background.jpg", RES_TYPE_IMAGE, 32, 1,  2},
 { "images/home/home_button.png", RES_TYPE_IMAGE, 32, 1,  2},
 { "images/unlocking/home_button.png", RES_TYPE_IMAGE, 32, 1,  2},
-
+{ "images/unlocking/password.png", RES_TYPE_IMAGE, 32, 1,  2},
+{ "images/unlocking/token.png", RES_TYPE_IMAGE, 32, 1,  2},
+{ "images/unlocking/qrcode.png", RES_TYPE_IMAGE, 32, 1,  2},

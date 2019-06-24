@@ -1,4 +1,7 @@
 #include "PasswordValidator.h"
+#include <string.h>
+#include "StorageManager.h"
+#include "Resident.h"
 
 AUTO_REGISTER_VALIDATOR(PasswordValidator);
 
@@ -21,12 +24,12 @@ AUTO_REGISTER_VALIDATOR(PasswordValidator);
 // +++++++++++++++++++++++++++
 // |   1.8. member functions |
 // +++++++++++++++++++++++++++
-int PasswordValidator::create(const char* code)
+int PasswordValidator::create(const char* password)
 {
-    assert(code && code[0]);
+    assert(password && password[0]);
     memset(mPassword, 0, sizeof(mPassword));
 
-    strncpy(mPassword, code, sizeof(mPassword)-1);
+    strncpy(mPassword, password, sizeof(mPassword)-1);
     
     hexdump(mPassword, sizeof(mPassword)-1);
     
@@ -34,8 +37,30 @@ int PasswordValidator::create(const char* code)
 }
 
 bool PasswordValidator::validate()
-{    
-    return true;
+{
+    char delim[] = "-";
+    char* telpwd = strdup(mPassword);
+    assert(telpwd);
+
+    char* tel = strsep(&telpwd, delim);
+    char* pwd = strsep(&telpwd, delim);
+
+    if(tel && pwd) {
+        db_msg("tel:%s pwd:%s\n", tel, pwd);
+
+        Resident resident;
+        STORAGEMANAGER.load(resident, tel);
+
+        if(strcmp(pwd, resident.password.c_str()) == 0) {
+            free(telpwd);
+            return true;
+        }
+    }
+
+    result = -1;
+    printf("%s %d: >> result = %d\n", __func__, __LINE__, result);
+    free(telpwd);
+    return false;
 }
 
 const char* PasswordValidator::dumpcode() const

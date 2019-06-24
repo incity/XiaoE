@@ -65,8 +65,8 @@ BOOL BlackScreenActivity::onCreate(mMainWnd* self, DWORD dwAddData)
 static void static_notify(mWidget *self, int id, int nc, DWORD add_data)
 {
     db_debug("Exit idle state. back to ^_^|HomeActivity|^_^\n");
-    POWERMANAGER.screenOn();
     ACTIVITYSTACK.home();
+    POWERMANAGER.screenOn();
 }
 
 // +++++++++++++++++++++++++++
@@ -91,5 +91,5 @@ NCS_WND_TEMPLATE BlackScreenActivity::control_templates[] = {
 };
 
 NCS_MNWND_TEMPLATE BlackScreenActivity::window_template = 
-    XIAOE_WINDOW_TEMPLATE(ACTIVITY_NAME, BlackScreenActivity::control_templates);
+    XIAOE_WINDOW_FULLSCREEN_TEMPLATE(ACTIVITY_NAME, BlackScreenActivity::control_templates);
 

@@ -85,6 +85,17 @@ StorageManager::StorageManager() :
                               "status INTEGER"
                     ")");
         }
+
+        bExists = mDb.tableExists("residents");
+        if(!bExists) {
+            mDb.exec("CREATE TABLE residents ("
+                         "PRIMARY KEY (id),"
+                                  "id INTEGER,"
+                                 "tel TEXT,"
+                            "password TEXT,"
+                    ")");
+        }
+
     } catch (std::exception& e) {
         db_error("table create failed!(%s)", e.what());
     }
@@ -93,7 +104,8 @@ StorageManager::StorageManager() :
 // +++++++++++++++++++++++++++
 // |   3.7. destructors      |
 // +++++++++++++++++++++++++++
-StorageManager::~StorageManager() {
+StorageManager::~StorageManager()
+{
 }
 
 // +++++++++++++++++++++++++++
@@ -102,9 +114,9 @@ StorageManager::~StorageManager() {
 void StorageManager::store(AccessRecord &record)
 {
     try {
-        AccessRecord::SqlDao helper(mDb);
+        AccessRecord::SqlDao dao(mDb);
         Mutex::Autolock _l(mDbLock);
-        helper.insert(record);
+        dao.insert(record);
     } catch (std::exception& e) {
         record.dump();
         db_error("store access record failed!(%s)", e.what());
@@ -114,9 +126,9 @@ void StorageManager::store(AccessRecord &record)
 void StorageManager::remove(AccessRecord &record)
 {
     try {
-        AccessRecord::SqlDao helper(mDb);
+        AccessRecord::SqlDao dao(mDb);
         Mutex::Autolock _l(mDbLock);
-        helper.remove(record);
+        dao.remove(record);
     } catch (std::exception& e) {
         record.dump();
         db_error("delete access record failed!(%s)", e.what());
@@ -126,9 +138,9 @@ void StorageManager::remove(AccessRecord &record)
 int StorageManager::load(AccessRecord &record)
 {
     try {
-        AccessRecord::SqlDao helper(mDb);
+        AccessRecord::SqlDao dao(mDb);
         Mutex::Autolock _l(mDbLock);
-        return helper.select(record);
+        return dao.select(record);
     } catch (std::exception& e) {
         db_error("load access record failed!(%s)", e.what());
     }
@@ -136,4 +148,16 @@ int StorageManager::load(AccessRecord &record)
     return 0;
 }
 
+int StorageManager::load(Resident &resident, const char* tel)
+{
+    try {
+        Resident::SqlDao dao(mDb);
+        Mutex::Autolock _l(mDbLock);
+        return dao.select(resident, tel);
+    } catch (std::exception& e) {
+        db_error("load resident failed!(%s)", e.what());
+    }
+
+    return 0;
+}
 
